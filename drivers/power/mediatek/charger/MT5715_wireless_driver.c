@@ -1009,7 +1009,11 @@ static int MT5715_probe(struct i2c_client *client, const struct i2c_device_id *i
 
     device_init_wakeup(chip->dev, true);
     
-    sysfs_create_group(&client->dev.kobj, &mt5715_sysfs_group);
+    rc = sysfs_create_group(&client->dev.kobj, &mt5715_sysfs_group);
+    if (rc) {
+        pr_err("%s: sysfs_create_group failed\n", __func__);
+        goto err;
+    }
  
     pr_err("MT5715 probed successfully\n");
 

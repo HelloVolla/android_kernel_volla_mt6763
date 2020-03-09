@@ -1619,7 +1619,7 @@ static int afx133_i2c_probe(struct i2c_client *client, const struct i2c_device_i
     i2c_set_clientdata(new_client, data);
 
     afx133_i2c_client = new_client;
-	printk("[AFX133] i2c address = %x in func %x at line %d\n", new_client->addr, __func__, __LINE__);
+	printk("[AFX133] i2c address = %x in func %s at line %d\n", new_client->addr, __func__, __LINE__);
 
     if((err = afx133_Chipset_Init(AFX133_MODE_IDLE)))
     {
