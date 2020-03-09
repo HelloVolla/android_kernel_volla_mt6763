@@ -521,7 +521,7 @@ int handle_switch_core(int cpu)
 			teei_cpu_id[switch_to_cpu_id], teei_cpu_id[cpu], 0);
 
 	current_cpu_id = switch_to_cpu_id;
-	IMSG_DEBUG("change cpu id from %d(0x%lx) to %d(0x%lx)\n",
+	IMSG_DEBUG("change cpu id from %d(0x%x) to %d(0x%x)\n",
 			cpu, teei_cpu_id[cpu],
 			switch_to_cpu_id, teei_cpu_id[switch_to_cpu_id]);
 
@@ -677,13 +677,13 @@ int set_soter_version(void)
 	unsigned int versionlen = 0;
 	char *version = NULL;
 
-	memcpy(&versionlen, message_buff, sizeof(unsigned int));
+	memcpy(&versionlen, (void *)message_buff, sizeof(unsigned int));
 	if (versionlen > 0 && versionlen < 100) {
 		version = kmalloc(versionlen + 1, GFP_KERNEL);
 		if (version == NULL)
 			return -1;
 		memset(version, 0, versionlen + 1);
-		memcpy(version, message_buff + 4, versionlen);
+		memcpy(version, (void *)(message_buff + 4), versionlen);
 	} else {
 		return -2;
 	}
