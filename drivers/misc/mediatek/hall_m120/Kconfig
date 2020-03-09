@@ -1,0 +1,10 @@
+
+config SENSOR_HALL_MXM1120
+        tristate "mxm1120 hall"
+        depends on I2C
+        help
+          Say Y here if you want support for hall controllers.
+          If unsure, say N.
+
+          To compile this driver as a module, choose M here: the
+          module will be called sec_ts.

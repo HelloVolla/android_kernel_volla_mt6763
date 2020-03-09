@@ -1,0 +1,30 @@
+config PRIZE_AUDIO
+  bool CONFIG_PRIZE_AUDIO
+  default no
+  help
+    CONFIG_PRIZE_AUDIO
+config PRIZE_FP
+  bool CONFIG_PRIZE_FP
+  default no
+  help
+    CONFIG_PRIZE_FP
+config PRIZE_LCD_BIAS
+  bool CONFIG_PRIZE_LCD_BIAS
+  default no
+  help
+    CONFIG_PRIZE_LCD_BIAS
+
+config PRIZE_SCREEN_STATE
+  bool CONFIG_PRIZE_SCREEN_STATE
+  default no
+  help
+    CONFIG_PRIZE_SCREEN_STATE
+
+
+config PRIZE_VEB_A5
+  bool PRIZE_VEB_A5
+  default no
+  help
+    PRIZE_VEB_A5	
+
+source "drivers/misc/mediatek/prize/lcdbias/Kconfig

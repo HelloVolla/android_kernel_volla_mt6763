@@ -1,0 +1,8 @@
+config MTK_LTR559
+  bool "LTR559 for MediaTek package"
+  default n
+	help
+	  It support different alsps sensor.
+          If this option is set,
+	  it will support
+          LTR559 alsps.

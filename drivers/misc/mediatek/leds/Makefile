@@ -1,0 +1,23 @@
+#
+# Copyright (C) 2015 MediaTek Inc.
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/leds/$(MTK_PLATFORM)
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/video/include
+
+obj-$(CONFIG_MTK_LEDS) += mtk_leds_drv.o
+
+obj-y += $(subst ",,$(CONFIG_MTK_PLATFORM))/
+
+###prize  lsw add this for breath leds at 20190624 start
+obj-$(CONFIG_PRIZE_LEDS_AW2015) += leds-aw2015.o
+###prize  lsw add this for breath leds at 20190624 end

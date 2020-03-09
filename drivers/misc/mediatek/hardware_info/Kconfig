@@ -1,0 +1,10 @@
+config PRIZE_HARDWARE_INFO
+  bool "HARDWARE_INFO"
+  default n
+  help
+    Dummy Lens Driver
+    This config is used to enable the corresponding
+    lens driver for the camera sensor module
+    Set as y if the driver is used in this project
+
+
