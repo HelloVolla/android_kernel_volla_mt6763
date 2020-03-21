@@ -182,6 +182,7 @@ bool connectivity_export_spm_resource_req(unsigned int user, unsigned int req_ma
  * event_trace_printk()
  *********************************************/
 
+#ifndef KERNEL_event_trace_printk
 #define KERNEL_event_trace_printk(ip, fmt, args...)               \
 do {                                                              \
 	__trace_printk_check_format(fmt, ##args);                 \
@@ -194,6 +195,7 @@ do {                                                              \
 	} else                                                    \
 		__trace_printk(ip, fmt, ##args);                  \
 } while (0)
+#endif /* KERNEL_event_trace_printk */
 
 #endif /* CONNECTIVITY_BUILD_IN_ADAPTER_H */
 
