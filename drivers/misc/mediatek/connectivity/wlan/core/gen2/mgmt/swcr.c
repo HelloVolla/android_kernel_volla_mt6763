@@ -885,7 +885,9 @@ VOID swCrReadWriteCmd(P_ADAPTER_T prAdapter, UINT_8 ucRead, UINT_16 u2Addr, UINT
 VOID swCrFrameCheckEnable(P_ADAPTER_T prAdapter, UINT_32 u4DumpType)
 {
 	g_u4SwcrDebugFrameDumpType = u4DumpType;
+#if CFG_RX_PKTS_DUMP
 	prAdapter->rRxCtrl.u4RxPktsDumpTypeMask = u4DumpType;
+#endif
 }
 
 VOID swCrDebugInit(P_ADAPTER_T prAdapter)

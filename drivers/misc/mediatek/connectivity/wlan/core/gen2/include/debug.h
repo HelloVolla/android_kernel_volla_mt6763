@@ -476,9 +476,9 @@ VOID wlanDebugCommandRecodTime(P_CMD_INFO_T prCmdInfo);
 VOID wlanDebugCommandRecodDump(VOID);
 #if CFG_SUPPORT_EMI_DEBUG
 VOID wlanReadFwInfoFromEmi(IN PUINT_32 pAddr);
+#endif
 
 VOID wlanFillTimestamp(P_ADAPTER_T prAdapter, PVOID pvPacket, UINT_8 ucPhase);
-#endif
 
 VOID wlanDbgLogLevelInit(VOID);
 VOID wlanDbgLogLevelUninit(VOID);
