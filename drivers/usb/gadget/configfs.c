@@ -9,6 +9,8 @@
 #include "u_f.h"
 #include "u_os_desc.h"
 
+/* #define DEBUG */
+
 #ifdef CONFIG_MTPROF
 #include "bootprof.h"
 #endif
@@ -1669,6 +1671,7 @@ static const struct usb_gadget_driver configfs_driver_template = {
 
 #ifdef CONFIG_USB_CONFIGFS_UEVENT
 
+#ifdef DEBUG
 #define USB_STATE_MONITOR_DELAY 5000
 static struct delayed_work usb_state_monitor_dw;
 static void do_usb_state_monitor_work(struct work_struct *work)
@@ -1690,17 +1693,22 @@ static void do_usb_state_monitor_work(struct work_struct *work)
 	pr_info("usb_state<%s>\n", usb_state);
 	schedule_delayed_work(&usb_state_monitor_dw, msecs_to_jiffies(USB_STATE_MONITOR_DELAY));
 }
+#endif
 
 void usb_state_monitor_work(void)
 {
 	static int inited;
 
 	if (!inited) {
+#ifdef DEBUG
 		/* TIMER_DEFERRABLE for not interfering with deep idle */
 		INIT_DEFERRABLE_WORK(&usb_state_monitor_dw, do_usb_state_monitor_work);
+#endif
 		inited = 1;
 	}
+#ifdef DEBUG
 	schedule_delayed_work(&usb_state_monitor_dw, msecs_to_jiffies(USB_STATE_MONITOR_DELAY));
+#endif
 }
 
 #define DESCRIPTOR_STRING_ATTR(field, buffer)				\
