@@ -500,7 +500,7 @@ static int mtk_voice_pm_ops_suspend(struct device *device)
 	b_modem1_speech_on = GetMemoryPathEnable(Soc_Aud_Digital_Block_MODEM_PCM_1_O);
 	b_modem2_speech_on = GetMemoryPathEnable(Soc_Aud_Digital_Block_MODEM_PCM_2_O);
 
-	pr_info("%s(), b_modem1_speech_on=%d, b_modem2_speech_on=%d, speech_md_active=%d\n",
+	pr_debug("%s(), b_modem1_speech_on=%d, b_modem2_speech_on=%d, speech_md_active=%d\n",
 		__func__, b_modem1_speech_on, b_modem2_speech_on,
 		voice_property.speech_md_active);
 

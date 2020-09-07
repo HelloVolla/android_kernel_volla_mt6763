@@ -1170,7 +1170,9 @@ static int tpd_local_init(void)
     memcpy(tpd_def_calmat, tpd_def_calmat_local_normal, 8 * 4);
 #endif
 
+#ifdef TPD_DEBUG_CODE
     tpd_type_cap = 1;
+#endif
 
     FTS_FUNC_EXIT();
     return 0;

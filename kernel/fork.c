@@ -10,7 +10,7 @@
  * Fork is rather simple, once you get the hang of it, but the memory
  * management can be a bitch. See 'mm/memory.c': 'copy_page_range()'
  */
-#define DEBUG
+//#define DEBUG
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/unistd.h>
@@ -1665,7 +1665,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
 		memcpy(shared_sig, current->signal->shared_pending.signal.sig,
 		       sizeof(shared_sig));
 		for (i = 0; i < _NSIG_WORDS; ++i)
-			pr_err("pending i=%d sig=0x%lx shared_sig=0x%lx\n",
+			pr_debug("pending i=%d sig=0x%lx shared_sig=0x%lx\n",
 			       i, sig[i], shared_sig[i]);
 		goto bad_fork_cancel_cgroup;
 	}
@@ -1766,7 +1766,7 @@ bad_fork_cleanup_count:
 bad_fork_free:
 	free_task(p);
 fork_out:
-	pr_err("[%d:%s] fork fail retval:0x%x\n", current->pid, current->comm, retval);
+	pr_debug("[%d:%s] fork fail retval:0x%x\n", current->pid, current->comm, retval);
 	return ERR_PTR(retval);
 }
 
@@ -1878,7 +1878,7 @@ long _do_fork(unsigned long clone_flags,
 		put_pid(pid);
 	} else {
 		nr = PTR_ERR(p);
-		pr_err("[%d:%s] fork fail:[%p, %d]\n", current->pid, current->comm, p, (int) nr);
+		pr_debug("[%d:%s] fork fail:[%p, %d]\n", current->pid, current->comm, p, (int) nr);
 	}
 	return nr;
 }

@@ -200,7 +200,7 @@ static unsigned int spm_output_wake_reason(struct wake_status *wakesta)
 	ddr_status = vcorefs_get_curr_ddr();
 	vcore_status = vcorefs_get_curr_vcore();
 
-	spm_crit2("dormant = %d, s_ddr = %d, s_vcore = %d, ddr = %d, vcore = %d, sleep_count = %d\n",
+	spm_debug("dormant = %d, s_ddr = %d, s_vcore = %d, ddr = %d, vcore = %d, sleep_count = %d\n",
 		  spm_dormant_sta, sleep_ddr_status, sleep_vcore_status,
 		  ddr_status, vcore_status, spm_sleep_count);
 	if (spm_ap_mdsrc_req_cnt != 0)
@@ -356,7 +356,7 @@ unsigned int spm_go_to_sleep(u32 spm_flags, u32 spm_data)
 	mt_cirq_enable();
 #endif
 
-	spm_crit2("sec = %u, wakesrc = 0x%x (%u)(%u)\n",
+	spm_debug("sec = %u, wakesrc = 0x%x (%u)(%u)\n",
 		  sec, pwrctrl->wake_src, is_cpu_pdn(pwrctrl->pcm_flags),
 		  is_infra_pdn(pwrctrl->pcm_flags));
 

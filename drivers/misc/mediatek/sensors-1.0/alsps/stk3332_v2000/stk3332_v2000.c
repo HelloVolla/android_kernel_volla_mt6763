@@ -117,7 +117,7 @@ extern struct platform_device *get_alsps_platformdev(void);
 #define APS_FUN(f)               printk(APS_TAG"%s\n", __func__)
 #define APS_ERR(fmt, args...)    printk(APS_TAG"%s %d : "fmt, __func__, __LINE__, ##args)
 #define APS_LOG(fmt, args...)    printk(APS_TAG fmt, ##args)
-#define APS_DBG(fmt, args...)    printk(APS_TAG fmt, ##args)
+#define APS_DBG(fmt, args...)    pr_debug(APS_TAG fmt, ##args)
 /******************************************************************************
  * extern functions
 *******************************************************************************/
@@ -1182,8 +1182,8 @@ static int stk3x3x_enable_als(struct i2c_client *client, int enable)
 	int err, cur = 0, old = atomic_read(&obj->slave_state_val);
 	int trc = atomic_read(&obj->trace);
 	u8 buf;
-	APS_LOG("%s: enable=%d\n", __func__, enable);
-	APS_LOG("%s: slave addr=0x%x\n", __func__, obj->slave_client->addr);
+	APS_DBG("%s: enable=%d\n", __func__, enable);
+	APS_DBG("%s: slave addr=0x%x\n", __func__, obj->slave_client->addr);
 	obj->als_debug_count = 0;
 	cur = old & (~(STK_STATE_EN_ALS_MASK | STK_STATE_EN_WAIT_MASK));
 
@@ -3581,7 +3581,7 @@ static int stk3x3x_i2c_suspend(struct device *dev)
 	struct stk3x3x_priv *obj = i2c_get_clientdata(client);
 	
 
-	APS_LOG("stk3x3x_i2c_suspend\n");
+	APS_DBG("stk3x3x_i2c_suspend\n");
 
 	if (!obj) {
 		APS_ERR("null pointer!!\n");
@@ -3602,7 +3602,7 @@ static int stk3x3x_i2c_resume(struct device *dev)
 	struct i2c_client *client = to_i2c_client(dev);
    	struct stk3x3x_priv *obj = i2c_get_clientdata(client);
 	
-	APS_LOG("stk3x3x_i2c_resume\n");
+	APS_DBG("stk3x3x_i2c_resume\n");
 	if (!obj) {
 		APS_ERR("null pointer!!\n");
 		return 0;

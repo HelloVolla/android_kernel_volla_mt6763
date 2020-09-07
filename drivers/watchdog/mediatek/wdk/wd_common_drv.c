@@ -544,13 +544,9 @@ static int kwdt_thread(void *arg)
 
 					/*
 					 * [wdt-c]: mark local bit only.
-					 * [wdt-k]: kick watchdog actaully, this log is more important thus
-					 *          using printk_deferred to ensure being printed.
+					 * [wdt-k]: kick watchdog actually.
 					 */
-					if (msg_buf[5] != 'k')
-						pr_debug("%s", msg_buf);
-					else
-						printk_deferred("%s", msg_buf);
+					pr_debug("%s", msg_buf);
 
 #ifdef CONFIG_LOCAL_WDT
 					printk_deferred("[wdk] cpu:%d, kick local wdt,RT[%lld]\n",
@@ -603,7 +599,7 @@ static int kwdt_thread(void *arg)
 				 * happens here
 				 */
 				if (msg_buf[0] != '\0')
-					pr_info("%s", msg_buf);
+					pr_debug("%s", msg_buf);
 			}
 		}
 

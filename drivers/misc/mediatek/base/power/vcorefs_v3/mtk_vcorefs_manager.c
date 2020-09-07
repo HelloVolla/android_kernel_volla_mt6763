@@ -187,7 +187,7 @@ static int _get_dvfs_opp(struct vcorefs_profile *pwrctrl, enum dvfs_kicker kicke
 	for (i = 0; i < NUM_KICKER; i++)
 		p += snprintf(p, buff_end-p, "%d, ", kicker_table[i]);
 
-	vcorefs_crit_mask(log_mask(), kicker, "kicker: %s, opp: %d, dvfs_opp: %d, sw_opp: %d, kr opp: %s\n",
+	vcorefs_debug("kicker: %s, opp: %d, dvfs_opp: %d, sw_opp: %d, kr opp: %s\n",
 					governor_get_kicker_name(kicker), opp, dvfs_opp, vcorefs_get_sw_opp(), table);
 
 	return dvfs_opp;

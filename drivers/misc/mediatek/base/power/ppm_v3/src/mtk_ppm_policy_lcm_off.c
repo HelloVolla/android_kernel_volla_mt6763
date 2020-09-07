@@ -83,7 +83,7 @@ static void ppm_lcmoff_switch(int onoff)
 
 	FUNC_ENTER(FUNC_LV_POLICY);
 
-	ppm_info("@%s: onoff = %d\n", __func__, onoff);
+	ppm_ver("@%s: onoff = %d\n", __func__, onoff);
 
 	ppm_lock(&lcmoff_policy.lock);
 

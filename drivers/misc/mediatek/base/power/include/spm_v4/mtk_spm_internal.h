@@ -1098,7 +1098,7 @@ extern void __sync_vcore_ctrl_pcm_flag(u32 oper_cond, u32 *flag);
 #define spm_warn(fmt, args...)		pr_info("[SPM] " fmt, ##args)
 #define spm_notice(fmt, args...)	pr_notice("[SPM] " fmt, ##args)
 #define spm_info(fmt, args...)		pr_info("[SPM] " fmt, ##args)
-#define spm_debug(fmt, args...)		pr_info("[SPM] " fmt, ##args)	/* pr_debug show nothing */
+#define spm_debug(fmt, args...)		pr_debug("[SPM] " fmt, ##args)	/* pr_debug show nothing */
 
 /* just use in suspend flow for important log due to console suspend */
 #define spm_crit2(fmt, args...)		\

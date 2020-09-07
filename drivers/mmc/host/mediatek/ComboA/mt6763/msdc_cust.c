@@ -276,7 +276,7 @@ void msdc_emmc_power(struct msdc_host *host, u32 on)
 
 	msdc_ldo_power(on, host->mmc->supply.vmmc, VOL_3000, &host->power_flash);
 
-	pr_info("msdc%d power %s\n", host->id, (on ? "on" : "off"));
+	pr_debug("msdc%d power %s\n", host->id, (on ? "on" : "off"));
 
 #ifdef MTK_MSDC_BRINGUP_DEBUG
 	msdc_dump_ldo_sts(host);
@@ -304,7 +304,7 @@ void msdc_sd_power(struct msdc_host *host, u32 on)
 		/* Clear VMC cal when power off */
 		if (!on)
 			pmic_set_register_value(PMIC_RG_VMC_VOCAL, 0x0);
-		pr_info("msdc%d power %s\n", host->id, (on ? "on" : "off"));
+		pr_debug("msdc%d power %s\n", host->id, (on ? "on" : "off"));
 		break;
 
 	default:

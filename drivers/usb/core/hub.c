@@ -1937,7 +1937,7 @@ void usb_set_device_state(struct usb_device *udev,
 	unsigned long flags;
 	int wakeup = -1;
 
-	dev_info(&udev->dev, "%s %d->%d\n", __func__, udev->state, new_state);
+	dev_dbg(&udev->dev, "%s %d->%d\n", __func__, udev->state, new_state);
 
 	spin_lock_irqsave(&device_state_lock, flags);
 	if (udev->state == USB_STATE_NOTATTACHED)

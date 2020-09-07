@@ -646,9 +646,9 @@ static int ion_fb_event(struct notifier_block *notifier, unsigned long event, vo
 	case FB_BLANK_VSYNC_SUSPEND:
 	case FB_BLANK_HSYNC_SUSPEND:
 	case FB_BLANK_POWERDOWN:
-		IONMSG("%s: + screen-off +\n", __func__);
+		IONDBG("%s: + screen-off +\n", __func__);
 		shrink_ion_by_scenario(1);
-		IONMSG("%s: - screen-off -\n", __func__);
+		IONDBG("%s: - screen-off -\n", __func__);
 		break;
 	default:
 		return -EINVAL;

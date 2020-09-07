@@ -855,7 +855,9 @@ static int himax_common_local_init(void)
 #endif
 
     I("end %s, %d\n", __FUNCTION__, __LINE__);
+#ifdef TPD_DEBUG_CODE
     tpd_type_cap = 1;
+#endif
 
     return 0;
 }

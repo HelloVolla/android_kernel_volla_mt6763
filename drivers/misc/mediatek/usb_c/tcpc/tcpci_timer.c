@@ -1033,7 +1033,7 @@ static void wake_up_work_func(struct work_struct *work)
 
 	mutex_lock(&tcpc_dev->typec_lock);
 
-	TCPC_INFO("%s\n", __func__);
+	TCPC_DBG("%s\n", __func__);
 #ifdef CONFIG_TYPEC_WAKEUP_ONCE_LOW_DUTY
 	tcpc_dev->typec_wakeup_once = true;
 #endif	/* CONFIG_TYPEC_WAKEUP_ONCE_LOW_DUTY */
@@ -1175,7 +1175,7 @@ static void __tcpc_enable_wakeup_timer(struct tcpc_device *tcpc, bool en)
 	int tout = 300; /* s */
 
 	if (en) {
-		TCPC_INFO("wakeup_timer\n");
+		TCPC_DBG("wakeup_timer\n");
 
 #ifdef CONFIG_TYPEC_WAKEUP_ONCE_LOW_DUTY
 		if (!tcpc->typec_wakeup_once) {

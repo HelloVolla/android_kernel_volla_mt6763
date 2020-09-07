@@ -687,7 +687,7 @@ int do_ptim_internal(bool isSuspend, unsigned int *bat, signed int *cur, bool *i
 #if defined(SWCHR_POWER_PATH)
 	pr_info("do_ptim_internal SWCHR_POWER_PATH: bat %d cur %d\n", *bat, *cur);
 #else
-	pr_info("do_ptim_internal : bat %d cur %d\n", *bat, *cur);
+	pr_debug("do_ptim_internal : bat %d cur %d\n", *bat, *cur);
 #endif
 
 	return ret;
@@ -1069,7 +1069,7 @@ int get_dlpt_imix_spm(void)
 	if (ui_soc != pre_ui_soc) {
 		pre_ui_soc = ui_soc;
 	} else {
-		pmic_spm_crit2("[dlpt_R] pre_SOC=%d SOC=%d skip\n", pre_ui_soc, ui_soc);
+		pr_debug("[dlpt_R] pre_SOC=%d SOC=%d skip\n", pre_ui_soc, ui_soc);
 		return 0;
 	}
 
@@ -1087,7 +1087,7 @@ int get_dlpt_imix_spm(void)
 	rac_val_avg = rac_val[0] + rac_val[1];
 	rac_val_avg = rac_val_avg / 2;
 	/*pmic_spm_crit2("[dlpt_R] %d,%d,%d\n", rac_val[0], rac_val[1], rac_val_avg);*/
-	pr_info("[dlpt_R] %d,%d,%d\n", rac_val[0], rac_val[1], rac_val_avg);
+	pr_debug("[dlpt_R] %d,%d,%d\n", rac_val[0], rac_val[1], rac_val_avg);
 
 	if (rac_val_avg > 100)
 		ptim_rac_val_avg = rac_val_avg;
@@ -1350,7 +1350,7 @@ int dlpt_notify_handler(void *unused)
 				}
 				pre_ui_soc = cur_ui_soc;
 
-				pr_info("[DLPT_final] %d,%d,%d,%d,%d,%d\n",
+				pr_debug("[DLPT_final] %d,%d,%d,%d,%d,%d\n",
 					g_imix_val, g_imix_val_pre, pre_ui_soc, cur_ui_soc,
 					diff_ui_soc, IMAX_MAX_VALUE);
 			}

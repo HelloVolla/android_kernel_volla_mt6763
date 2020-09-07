@@ -626,11 +626,11 @@ static void pmic_sp_irq_handler(unsigned int spNo, unsigned int sp_conNo, unsign
 	if ((sp_interrupts[spNo].status + 0x6 * sp_conNo) == PMIC_RG_INT_STATUS_BAT_H_ADDR &&
 	    (sp_int_status == 0x4 || sp_int_status == 0x8 || sp_int_status == 0xC)) {
 		if (__ratelimit(&ratelimit)) {
-			pr_notice(PMICTAG "[PMIC_INT] Reg[0x%x]=0x%x\n",
+			pr_debug(PMICTAG "[PMIC_INT] Reg[0x%x]=0x%x\n",
 				(sp_interrupts[spNo].status + 0x6 * sp_conNo), sp_int_status);
 		}
 	} else {
-		pr_notice(PMICTAG "[PMIC_INT] Reg[0x%x]=0x%x\n",
+		pr_debug(PMICTAG "[PMIC_INT] Reg[0x%x]=0x%x\n",
 			(sp_interrupts[spNo].status + 0x6 * sp_conNo), sp_int_status);
 	}
 #if 0

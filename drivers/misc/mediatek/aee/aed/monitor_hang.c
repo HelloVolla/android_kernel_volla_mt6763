@@ -1617,7 +1617,7 @@ static int hang_detect_thread(void *arg)
 	msleep(120 * 1000);
 	pr_debug("[Hang_Detect] hang_detect thread starts.\n");
 	while (1) {
-		pr_info("[Hang_Detect] hang_detect thread counts down %d:%d, status %d.\n",
+		pr_debug("[Hang_Detect] hang_detect thread counts down %d:%d, status %d.\n",
 				hang_detect_counter, hd_timeout, hd_detect_enabled);
 		system_server_pid = FindTaskByName("system_server");
 

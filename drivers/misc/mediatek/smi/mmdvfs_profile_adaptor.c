@@ -759,7 +759,7 @@ static void mmdvfs_configure_clk_hw(struct mmdvfs_adaptor *self,
 			int hopping_ret = -1;
 
 			hopping_ret = mt_dfs_general_pll(pll_id, clk_rate);
-			MMDVFSMSG("pll_hopping_rate: id = (%d), dds = 0x%08x\n", pll_id, clk_rate);
+			MMDVFSTMP("pll_hopping_rate: id = (%d), dds = 0x%08x\n", pll_id, clk_rate);
 
 			if (hopping_ret)
 				MMDVFSMSG("Failed to hopping rate:%d->0x%08x\n", pll_id, clk_rate);

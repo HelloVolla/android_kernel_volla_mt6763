@@ -967,7 +967,7 @@ deinit_ic_ops_done:
 
 static VOID wmt_core_dump_func_state(PINT8 pSource)
 {
-	WMT_INFO_FUNC
+	WMT_DBG_FUNC
 	    ("[%s]status(b:%d f:%d g:%d w:%d lpbk:%d coredump:%d wmt:%d ant:%d sd1:%d sd2:%d stp:%d)\n",
 	     (pSource == NULL ? (PINT8) "CORE" : pSource), gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_BT],
 	     gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_FM], gMtkWmtCtx.eDrvStatus[WMTDRV_TYPE_GPS],

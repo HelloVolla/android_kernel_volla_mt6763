@@ -876,7 +876,7 @@ void msdc_set_mclk(struct msdc_host *host, unsigned char timing, u32 hz)
 	/* need because clk changed.*/
 	host->max_busy_timeout_ms = msdc_max_busy_timeout_ms(host);
 	msdc_set_timeout(host, host->timeout_ns, host->timeout_clks);
-	pr_info("msdc%d -> !!! Set<%dKHz> Source<%dKHz> -> sclk<%dKHz> timing<%d> mode<%d> div<%d> hs400_div_dis<%d>\n",
+	pr_debug("msdc%d -> !!! Set<%dKHz> Source<%dKHz> -> sclk<%dKHz> timing<%d> mode<%d> div<%d> hs400_div_dis<%d>\n",
 		host->id, hz/1000, hclk/1000, sclk/1000, (int)timing, mode, div,
 		hs400_div_dis);
 

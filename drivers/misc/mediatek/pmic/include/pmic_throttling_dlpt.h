@@ -26,7 +26,7 @@ do {					\
 #else
 #define pmic_spm_crit2(fmt, args...)		\
 do {					\
-	pr_info("[SPM-PMIC] " fmt, ##args);		\
+	pr_debug("[SPM-PMIC] " fmt, ##args);		\
 } while (0)
 #endif
 

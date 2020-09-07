@@ -4140,6 +4140,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 	struct DSI_RX_DATA_REG read_data1;
 	struct DSI_RX_DATA_REG read_data2;
 	struct DSI_RX_DATA_REG read_data3;
+
 	unsigned char packet_type;
 	//prize-chenhongjin-20190327 for lcd esd 607 start
 	//unsigned char buffer[30];
@@ -4211,6 +4212,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 			t0.Data1 = 0;
 
 			t1.CONFG = 0x00;
+
 			t1.Data_ID = 0x37;
 			t1.Data0 = dsi_params->lcm_esd_check_table[i].count;
 			t1.Data1 = 0;
@@ -4305,6 +4307,10 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 
 			lcm_esd_tb = &dsi_params->lcm_esd_check_table[i];
 	//prize-chenhongjin-20190327 for lcd esd 607 start
+
+
+
+
 #if 0
 			printk("[DSI]enter cmp read_data0 byte0=0x%x byte1=0x%x byte2=0x%x byte3=0x%x\n",read_data0.byte0, read_data0.byte1, read_data0.byte2,	read_data0.byte3);
 			printk("[DSI]enter cmp read_data1 byte0=0x%x byte1=0x%x byte2=0x%x byte3=0x%x\n",read_data1.byte0, read_data1.byte1, read_data1.byte2,	read_data1.byte3);
@@ -4393,7 +4399,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 				}
 				else
 				{
-					printk ("%s esd check fail.\n",__func__);
+					pr_warning("%s esd check fail.\n",__func__);
 					ret = 1; // esd fail
 					break;
 				}
@@ -4414,7 +4420,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 				}
 				else
 				{
-					printk ("%s esd check fail.\n",__func__);
+					pr_warning("%s esd check fail.\n",__func__);
 					ret = 1; // esd fail
 					break;
 				}
@@ -4428,7 +4434,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 				}
 				else
 				{
-				    printk ("%s esd check fail.\n",__func__);
+					pr_warning("%s esd check fail.\n",__func__);
 				ret = 1;
 				break;
 				}
@@ -4456,6 +4462,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 	    }
 		 
 		 }
+
 		}	
 	//prize-chenhongjin-20190327 for lcd esd 607 end		
 	} else if (state == CMDQ_ESD_ALLC_SLOT) {
@@ -4474,6 +4481,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 				cmdqBackupFreeSlot(hSlot[h]);
 				hSlot[h] = 0;
 			}
+
 		}
 	} else if (state == CMDQ_STOP_VDO_MODE) {
 		/* use cmdq to stop dsi vdo mode */
@@ -4510,19 +4518,23 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 			/* polling dsi busy */
 			DSI_POLLREG32(cmdq_trigger_handle,
 				&DSI_REG[i]->DSI_INTSTA, 0x80000000, 0);
+
 		}
+
 
 		i = DSI_MODULE_END(module);
 		if (i == 1) /* DUAL */
 			DSI_POLLREG32(cmdq_trigger_handle,
 				&DSI_REG[i]->DSI_INTSTA, 0x80000000, 0);
 	} else if (state == CMDQ_START_VDO_MODE) {
+
 		/* 0. dual dsi set DSI_START/DSI_DUAL_EN */
 		if (module == DISP_MODULE_DSIDUAL) {
 			DSI_OUTREGBIT(cmdq_trigger_handle, struct DSI_START_REG,
 				DSI_REG[0]->DSI_START, DSI_START, 0);
 			DSI_OUTREGBIT(cmdq_trigger_handle, struct DSI_START_REG,
 				DSI_REG[1]->DSI_START, DSI_START, 0);
+
 
 			DSI_OUTREGBIT(cmdq_trigger_handle,
 				struct DSI_COM_CTRL_REG,
@@ -5223,4 +5235,3 @@ void DSI_ForceConfig(int forceconfig)
 		}
 	}
 }
-

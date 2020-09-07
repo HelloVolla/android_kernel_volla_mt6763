@@ -1946,7 +1946,7 @@ int tcpc_typec_handle_cc_change(struct tcpc_device *tcpc_dev)
 	typec_try_exit_norp_src(tcpc_dev);
 #endif	/* CONFIG_TYPEC_CAP_NORP_SRC */
 
-	TYPEC_INFO("[CC_Alert] %d/%d\r\n", typec_get_cc1(), typec_get_cc2());
+	TYPEC_DBG("[CC_Alert] %d/%d\r\n", typec_get_cc1(), typec_get_cc2());
 
 	typec_disable_low_power_mode(tcpc_dev);
 

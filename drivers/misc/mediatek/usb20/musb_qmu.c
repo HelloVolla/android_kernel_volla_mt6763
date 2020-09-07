@@ -305,7 +305,7 @@ void musb_disable_q_all(struct musb *musb)
 {
 	u32 ep_num;
 
-	QMU_WARN("disable_q_all\n");
+	QMU_DBG("disable_q_all\n");
 	mtk_host_active_dev_resource_reset();
 #ifdef CONFIG_MTK_UAC_POWER_SAVING
 	low_power_timer_resource_reset();

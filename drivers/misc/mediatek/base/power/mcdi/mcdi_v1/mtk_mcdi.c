@@ -749,7 +749,7 @@ void mcdi_heart_beat_log_dump(void)
 	mcdi_buf_append(buf, ", system_idle_hint = %08x\n",
 						system_idle_hint_result_raw());
 
-	pr_warn("%s\n", get_mcdi_buf(buf));
+	pr_debug("%s\n", get_mcdi_buf(buf));
 }
 
 int mcdi_enter(int cpu)

@@ -305,12 +305,12 @@ unsigned int __spm_output_wake_reason(const struct wake_status *wakesta,
 	WARN_ON(log_size >= 1024);
 
 //prize added by sunshuai, Wake-up source information when the output deep standby wakes up, 20190709-start
-    if(suspend == true)
-        spm_crit2("new add %s", log_buf);
+	//if(suspend == true)
+	//	spm_crit2("new add %s", log_buf);
 //prize added by sunshuai, Wake-up source information when the output deep standby wakes up, 20190709-end
 
 
-	spm_print(suspend, "%s", log_buf);
+	spm_debug("%s", log_buf);
 
 	return wr;
 }

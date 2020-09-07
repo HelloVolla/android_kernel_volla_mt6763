@@ -256,7 +256,7 @@ static int tcpci_alert_fault(struct tcpc_device *tcpc_dev)
 static int tcpci_alert_wakeup(struct tcpc_device *tcpc_dev)
 {
 	if (tcpc_dev->tcpc_flags & TCPC_FLAGS_LPM_WAKEUP_WATCHDOG) {
-		TCPC_INFO("Wakeup\r\n");
+		TCPC_DBG("Wakeup\r\n");
 
 		if (tcpc_dev->typec_remote_cc[0] == TYPEC_CC_DRP_TOGGLING)
 			tcpc_enable_wakeup_timer(tcpc_dev, true);
