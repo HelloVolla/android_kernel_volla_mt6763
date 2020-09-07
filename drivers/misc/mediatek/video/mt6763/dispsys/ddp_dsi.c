@@ -4234,10 +4234,10 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 
 //MMProfileLogEx(ddp_mmp_get_events()->esd_rdlcm, MMProfileFlagPulse, AS_UINT32(&read_data0), AS_UINT32(&(dsi_params->lcm_esd_check_table[i])));
 
-			printk("[DSI]enter cmp read_data0 byte0=0x%x byte1=0x%x byte2=0x%x byte3=0x%x\n",
+			pr_debug("[DSI]enter cmp read_data0 byte0=0x%x byte1=0x%x byte2=0x%x byte3=0x%x\n",
 			     read_data0.byte0, read_data0.byte1, read_data0.byte2,
 			     read_data0.byte3);
-			printk("[DSI]enter cmp read_data1 byte0=0x%x byte1=0x%x byte2=0x%x byte3=0x%x\n",
+			pr_debug("[DSI]enter cmp read_data1 byte0=0x%x byte1=0x%x byte2=0x%x byte3=0x%x\n",
 			     read_data1.byte0, read_data1.byte1, read_data1.byte2,
 			     read_data1.byte3);
 #if 0
@@ -4260,7 +4260,7 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 				AS_UINT32(DISPSYS_DSI0_BASE + 0x0c));
 #endif
    packet_type = read_data0.byte0;
-   printk ("DSI read packet_type is 0x%x \n",packet_type);
+   pr_debug("DSI read packet_type is 0x%x \n",packet_type);
    if(packet_type == 0x1A || packet_type == 0x1C)
    {
     recv_data_cnt = read_data0.byte1 + read_data0.byte2 * 16;
@@ -4286,12 +4286,12 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 				{
 				// clear rx data
 				// DSI_OUTREG32(NULL, &DSI_REG[dsi_i]->DSI_RX_DATA0,0);
-					printk ("%s esd check ok.\n", __func__);
+					pr_debug("%s esd check ok.\n", __func__);
 					ret = 0; // esd pass
 				}
 				else
 				{
-					printk ("%s esd check fail.\n",__func__);
+					pr_warning("%s esd check fail.\n",__func__);
 					ret = 1; // esd fail
 					break;
 				}
@@ -4307,12 +4307,12 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 				{
 				// clear rx data
 				// DSI_OUTREG32(NULL, &DSI_REG[dsi_i]->DSI_RX_DATA0,0);
-					printk ("%s esd check ok.\n", __func__);
+					pr_debug("%s esd check ok.\n", __func__);
 					ret = 0; // esd pass
 				}
 				else
 				{
-					printk ("%s esd check fail.\n",__func__);
+					pr_warning("%s esd check fail.\n",__func__);
 					ret = 1; // esd fail
 					break;
 				}
@@ -4321,12 +4321,12 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 			{
 				if(read_data1.byte0 == dsi_params->lcm_esd_check_table[i].para_list[0])
 				{
-					printk ("%s esd check ok.\n",__func__);
+					pr_debug("%s esd check ok.\n",__func__);
 					ret = 0;
 				}
 				else
 				{
-				    printk ("%s esd check fail.\n",__func__);
+					pr_warning("%s esd check fail.\n",__func__);
 					ret = 1; // esd fail
 					break;
 				}

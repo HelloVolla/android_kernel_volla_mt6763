@@ -551,7 +551,7 @@ static int set_dvfs_with_opp(struct kicker_config *krconf)
 	if (idx < OPP_0)
 		idx = gvrctrl->late_init_opp;
 
-	vcorefs_crit_mask(log_mask(), krconf->kicker, "opp: %d, vcore: %u <= %u, fddr: %u <= %u %s%s\n",
+	vcorefs_debug("opp: %d, vcore: %u <= %u, fddr: %u <= %u %s%s\n",
 			krconf->dvfs_opp,
 			opp_ctrl_table[idx].vcore_uv, gvrctrl->curr_vcore_uv,
 			opp_ctrl_table[idx].ddr_khz, gvrctrl->curr_ddr_khz,

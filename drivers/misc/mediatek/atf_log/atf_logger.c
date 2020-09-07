@@ -506,7 +506,7 @@ static void atf_time_sync_resume(void)
 #else
 	mt_secure_call(MTK_SIP_KERNEL_TIME_SYNC, (u32)time_to_sync, (u32)(time_to_sync >> 32), 0);
 #endif
-	pr_notice("atf_time_sync: resume sync");
+	pr_debug("atf_time_sync: resume sync");
 }
 
 static struct syscore_ops atf_time_sync_syscore_ops = {

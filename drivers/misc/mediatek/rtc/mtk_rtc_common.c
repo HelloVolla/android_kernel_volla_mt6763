@@ -170,6 +170,9 @@
 #define rtc_xfatal(fmt, args...)	\
 	pr_emerg(fmt, ##args)
 
+#define rtc_xdebug(fmt, args...)	\
+	pr_debug(fmt, ##args)
+
 static struct rtc_device *rtc;
 static DEFINE_SPINLOCK(rtc_lock);
 
@@ -482,7 +485,7 @@ static void rtc_handler(void)
 	struct rtc_time tm;
 	unsigned long flags;
 
-	rtc_xinfo("rtc_tasklet_handler start\n");
+	rtc_xdebug("rtc_tasklet_handler start\n");
 
 	spin_lock_irqsave(&rtc_lock, flags);
 	isLowPowerIrq = hal_rtc_is_lp_irq();
@@ -682,7 +685,7 @@ static int rtc_ops_set_alarm(struct device *dev, struct rtc_wkalrm *alm)
 	tm.tm_year -= RTC_MIN_YEAR_OFFSET;
 	tm.tm_mon++;
 
-	rtc_xinfo("set al time = %04d/%02d/%02d %02d:%02d:%02d (%d)\n",
+	rtc_xdebug("set al time = %04d/%02d/%02d %02d:%02d:%02d (%d)\n",
 		  tm.tm_year + RTC_MIN_YEAR, tm.tm_mon, tm.tm_mday,
 		  tm.tm_hour, tm.tm_min, tm.tm_sec, alm->enabled);
 

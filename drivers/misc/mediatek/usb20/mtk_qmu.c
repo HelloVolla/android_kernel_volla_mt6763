@@ -564,7 +564,7 @@ void mtk_qmu_enable(struct musb *musb, u8 ep_num, u8 isRx)
 	musb_ep_select(mbase, ep_num);
 
 	if (isRx) {
-		QMU_WARN("enable RQ(%d)\n", ep_num);
+		QMU_DBG("enable RQ(%d)\n", ep_num);
 
 		/* enable dma */
 		csr |= MUSB_RXCSR_DMAENAB;
@@ -633,7 +633,7 @@ void mtk_qmu_enable(struct musb *musb, u8 ep_num, u8 isRx)
 		MGC_WriteQMU32(base, MGC_O_QMU_RQCSR(ep_num), DQMU_QUE_START);
 
 	} else {
-		QMU_WARN("enable TQ(%d)\n", ep_num);
+		QMU_DBG("enable TQ(%d)\n", ep_num);
 
 		/* enable dma */
 		csr |= MUSB_TXCSR_DMAENAB;

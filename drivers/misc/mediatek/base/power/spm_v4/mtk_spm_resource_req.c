@@ -272,7 +272,7 @@ void spm_resource_req_block_dump(void)
 	spin_lock_irqsave(&spm_resource_desc_update_lock, flags);
 
 	if (curr_res_usage == SPM_RESOURCE_ALL) {
-		pr_err("[resource_req_block] user: 0x%x, 0x%x\n",
+		pr_debug("[resource_req_block] user: 0x%x, 0x%x\n",
 				resc_desc[0].user_usage[0],
 				resc_desc[0].user_usage[1]);
 	}

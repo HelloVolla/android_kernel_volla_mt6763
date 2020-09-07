@@ -91,7 +91,7 @@ void spm_set_sysclk_settle(void)
 	settle = spm_read(SPM_CLK_SETTLE);
 
 	/* md_settle is keyword for suspend status */
-	spm_crit2("md_settle = %u, settle = %u\n", SPM_SYSCLK_SETTLE, settle);
+	spm_debug("md_settle = %u, settle = %u\n", SPM_SYSCLK_SETTLE, settle);
 }
 
 /* #define SPM_PMIC_DEBUG */

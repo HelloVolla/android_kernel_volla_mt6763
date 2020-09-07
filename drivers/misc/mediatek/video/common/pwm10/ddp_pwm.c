@@ -184,12 +184,12 @@ static void disp_pwm_backlight_status(enum disp_pwm_id_t id, bool is_power_on)
 	}
 
 	if (is_power_on == true && high_width > 0) {
-		PWM_NOTICE("backlight is on (%d), ddp_pwm power:(%d), pwm id: (%d)",
+		PWM_MSG("backlight is on (%d), ddp_pwm power:(%d), pwm id: (%d)",
 			high_width, is_power_on, index);
 		/* Change status when backlight turns on */
 		atomic_set(&g_pwm_is_power_on[index], 1);
 	} else if (is_power_on == false) {
-		PWM_NOTICE("backlight is off, ddp_pwm power:(%d), pwm id: (%d)",
+		PWM_MSG("backlight is off, ddp_pwm power:(%d), pwm id: (%d)",
 			is_power_on, index);
 		/* Save vlaue before clock off */
 		atomic_set(&g_pwm_value_before_power_off[index], high_width);
@@ -232,7 +232,7 @@ static void disp_pwm_query_backlight(char *debug_output)
 			atomic_read(&g_pwm_is_power_on[index]));
 	}
 
-	PWM_NOTICE("%s", temp_buf);
+	PWM_MSG("%s", temp_buf);
 #endif
 }
 
@@ -539,7 +539,7 @@ int disp_pwm_set_backlight_cmdq(enum disp_pwm_id_t id, int level_1024, void *cmd
 			disp_pwm_log(level_1024, MSG_LOG);
 			if (old_pwm != level_1024) {
 				/* Print information if backlight is changed */
-				PWM_NOTICE("disp_pwm_set_backlight_cmdq(id = 0x%x, level_1024 = %d), old = %d",
+				PWM_MSG("disp_pwm_set_backlight_cmdq(id = 0x%x, level_1024 = %d), old = %d",
 					id, level_1024, old_pwm);
 			}
 		} else {

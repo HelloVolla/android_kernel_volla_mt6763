@@ -50,6 +50,9 @@
 #define hal_rtc_xfatal(fmt, args...)	\
 	pr_emerg(fmt, ##args)
 
+#define hal_rtc_xdebug(fmt, args...)	\
+	pr_debug(fmt, ##args)
+
 /* Causion, for SRCLKENA drop speed too slow (align VIO18) to cause current leakage for 32K less */
 #define GPIO_SRCLKEN_PIN (148 | 0x80000000)
 
@@ -302,13 +305,13 @@ bool hal_rtc_is_pwron_alarm(struct rtc_time *nowtm, struct rtc_time *tm)
 	u16 pdn1;
 
 	pdn1 = rtc_read(RTC_PDN1);
-	hal_rtc_xinfo("pdn1 = 0x%4x\n", pdn1);
+	hal_rtc_xdebug("pdn1 = 0x%4x\n", pdn1);
 
 	if (pdn1 & RTC_PDN1_PWRON_TIME) {	/* power-on time is available */
 
-		hal_rtc_xinfo("pdn1 = 0x%4x\n", pdn1);
+		hal_rtc_xdebug("pdn1 = 0x%4x\n", pdn1);
 		hal_rtc_get_tick_time(nowtm);
-		hal_rtc_xinfo("pdn1 = 0x%4x\n", pdn1);
+		hal_rtc_xdebug("pdn1 = 0x%4x\n", pdn1);
 		if (rtc_read(RTC_TC_SEC) < nowtm->tm_sec) {	/* SEC has carried */
 			hal_rtc_get_tick_time(nowtm);
 		}

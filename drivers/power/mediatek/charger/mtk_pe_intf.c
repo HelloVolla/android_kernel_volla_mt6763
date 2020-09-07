@@ -451,7 +451,7 @@ _err:
 	/* Unlock */
 	wake_unlock(&pe->suspend_lock);
 	mutex_unlock(&pe->access_lock);
-	chr_info("%s: stop, SOC = %d, to_check_chr_type = %d, chr_type = %d, ret = %d\n",
+	chr_debug("%s: stop, SOC = %d, to_check_chr_type = %d, chr_type = %d, ret = %d\n",
 		__func__, battery_get_bat_soc(), pe->to_check_chr_type,
 		mt_get_charger_type(), ret);
 
@@ -464,7 +464,7 @@ int mtk_pe_start_algorithm(struct charger_manager *pinfo)
 	struct mtk_pe *pe = &pinfo->pe;
 
 	if (!pinfo->enable_hv_charging) {
-		chr_info("%s: hv charging is disabled\n", __func__);
+		chr_debug("%s: hv charging is disabled\n", __func__);
 		if (pe->is_connect) {
 			pe_leave(pinfo, true);
 			pe->to_check_chr_type = true;
@@ -473,12 +473,12 @@ int mtk_pe_start_algorithm(struct charger_manager *pinfo)
 	}
 
 	if (mtk_pe20_get_is_connect(pinfo)) {
-		chr_info("%s: stop, PE+20 is connected\n", __func__);
+		chr_debug("%s: stop, PE+20 is connected\n", __func__);
 		return ret;
 	}
 
 	if (!pe->is_enabled) {
-		chr_info("%s: stop, PE+ is disabled\n", __func__);
+		chr_debug("%s: stop, PE+ is disabled\n", __func__);
 		return ret;
 	}
 
@@ -494,7 +494,7 @@ int mtk_pe_start_algorithm(struct charger_manager *pinfo)
 	/* TA is not connected */
 	if (!pe->is_connect) {
 		ret = -EIO;
-		chr_info("%s: stop, PE+ is not connected\n", __func__);
+		chr_debug("%s: stop, PE+ is not connected\n", __func__);
 		goto _out;
 	}
 
@@ -553,7 +553,7 @@ _err:
 	pe_leave(pinfo, false);
 _out:
 	chr_volt = pe_get_vbus();
-	chr_info("%s: vchr_org = %d, vchr_after = %d, delta = %d\n",
+	chr_debug("%s: vchr_org = %d, vchr_after = %d, delta = %d\n",
 		__func__, pe->ta_vchr_org / 1000, chr_volt / 1000,
 		(chr_volt - pe->ta_vchr_org) / 1000);
 

@@ -1529,7 +1529,7 @@ static int fgauge_read_boot_battery_plug_out_status(struct gauge_device *gauge_d
 {
 	*is_plugout = is_bat_plugout;
 	*plutout_time = bat_plug_out_time;
-	bm_err("[read_boot_battery_plug_out_status] rtc_invalid %d plugout %d bat_plug_out_time %d sp0:0x%x sp3:0x%x %d %d\n",
+	bm_debug("[read_boot_battery_plug_out_status] rtc_invalid %d plugout %d bat_plug_out_time %d sp0:0x%x sp3:0x%x %d %d\n",
 			rtc_invalid, is_bat_plugout, bat_plug_out_time, gspare0_reg, gspare3_reg,
 			moniter_plchg_bit, pl_charging_status);
 
@@ -1899,14 +1899,14 @@ void battery_dump_nag(void)
 	vbat_val = nag_vbat_reg & 0x7fff;
 	nag_vbat_mv = REG_to_MV_value(vbat_val);
 
-	bm_err("[read_nafg_vbat] i:%d nag_vbat_reg 0x%x nag_vbat_mv %d:%d %d,nag_zcv:%d,_zcv_reg:0x%x,thr:%d,_thr_reg:0x%x\n",
+	bm_debug("[read_nafg_vbat] i:%d nag_vbat_reg 0x%x nag_vbat_mv %d:%d %d,nag_zcv:%d,_zcv_reg:0x%x,thr:%d,_thr_reg:0x%x\n",
 		i, nag_vbat_reg, nag_vbat_mv, vbat_val,
 		pmic_get_battery_voltage(),
 		nag_zcv_mv, _zcv_reg, nag_c_dltv_mv, _thr_reg
 		);
 
 
-	bm_err("[read_nafg_vbat1] %d %d %d %d %d %d %d %d %d %d\n",
+	bm_debug("[read_nafg_vbat1] %d %d %d %d %d %d %d %d %d %d\n",
 		pmic_get_register_value(PMIC_AUXADC_NAG_C_DLTV_IRQ),
 		pmic_get_register_value(PMIC_AUXADC_NAG_IRQ_EN),
 		pmic_get_register_value(PMIC_AUXADC_NAG_PRD),
@@ -1919,7 +1919,7 @@ void battery_dump_nag(void)
 		pmic_get_register_value(PMIC_AUXADC_NAG_CNT_15_0)
 		);
 
-	bm_err("[read_nafg_vbat2] %d %d %d %d %d %d %d %d %d %d %d %d\n",
+	bm_debug("[read_nafg_vbat2] %d %d %d %d %d %d %d %d %d %d %d %d\n",
 		pmic_get_register_value(PMIC_RG_AUXADC_CK_PDN_HWEN),
 		pmic_get_register_value(PMIC_RG_AUXADC_CK_PDN),
 		pmic_get_register_value(PMIC_RG_AUXADC_NAG_CK_SW_MODE),
@@ -2356,7 +2356,7 @@ int fgauge_get_hw_status(struct gauge_device *gauge_dev, struct gauge_hw_status 
 	fgauge_get_time(gauge_dev, &time);
 	gauge_dev->fg_hw_info.time = time;
 
-	bm_err("[FGADC_intr_end][%s][read_fg_hw_info] curr_1 %d curr_2 %d Iavg %d sign %d car %d ncar %d time %d\n",
+	bm_debug("[FGADC_intr_end][%s][read_fg_hw_info] curr_1 %d curr_2 %d Iavg %d sign %d car %d ncar %d time %d\n",
 		intr_name, gauge_dev->fg_hw_info.current_1, gauge_dev->fg_hw_info.current_2,
 		gauge_dev->fg_hw_info.current_avg, gauge_dev->fg_hw_info.current_avg_sign,
 		gauge_dev->fg_hw_info.car, gauge_dev->fg_hw_info.ncar, gauge_dev->fg_hw_info.time);

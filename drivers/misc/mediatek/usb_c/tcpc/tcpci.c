@@ -201,7 +201,7 @@ int tcpci_set_low_rp_duty(struct tcpc_device *tcpc, bool low_rp)
 {
 #ifdef CONFIG_TYPEC_CAP_LOW_RP_DUTY
 	if (low_rp)
-		TCPC_INFO("low_rp_duty\r\n");
+		TCPC_DBG("low_rp_duty\r\n");
 
 	if (tcpc->ops->set_low_rp_duty)
 		return tcpc->ops->set_low_rp_duty(tcpc, low_rp);

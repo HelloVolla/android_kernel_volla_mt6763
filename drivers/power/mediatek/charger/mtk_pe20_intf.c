@@ -140,7 +140,7 @@ static int pe20_set_mivr(struct charger_manager *pinfo, int uV)
 		if (chg2_chip_enabled) {
 			ret = charger_dev_set_mivr(pinfo->chg2_dev, uV);
 			if (ret < 0)
-				pr_info("%s: chg2 failed, ret = %d\n", __func__,
+				pr_err("%s: chg2 failed, ret = %d\n", __func__,
 					ret);
 		}
 	}
@@ -567,7 +567,7 @@ int mtk_pe20_check_charger(struct charger_manager *pinfo)
 	return ret;
 out:
 
-	chr_info("%s: stop, SOC = (%d, %d, %d), to_check_chr_type = %d, chr_type = %d, ret = %d\n",
+	chr_debug("%s: stop, SOC = (%d, %d, %d), to_check_chr_type = %d, chr_type = %d, ret = %d\n",
 		__func__, battery_get_bat_soc(), pinfo->data.ta_start_battery_soc,
 		pinfo->data.ta_stop_battery_soc, pe20->to_check_chr_type,
 		mt_get_charger_type(), ret);
@@ -591,7 +591,7 @@ int mtk_pe20_start_algorithm(struct charger_manager *pinfo)
 	struct mtk_pe20 *pe20 = &pinfo->pe2;
 
 	if (!pinfo->enable_hv_charging) {
-		chr_info("%s: hv charging is disabled\n", __func__);
+		chr_debug("%s: hv charging is disabled\n", __func__);
 		if (pe20->is_connect) {
 			pe20_leave(pinfo);
 			pe20->to_check_chr_type = true;
@@ -600,7 +600,7 @@ int mtk_pe20_start_algorithm(struct charger_manager *pinfo)
 	}
 
 	if (!pe20->is_enabled) {
-		chr_info("%s: stop, PE+20 is disabled\n",
+		chr_debug("%s: stop, PE+20 is disabled\n",
 			__func__);
 		return ret;
 	}
@@ -614,7 +614,7 @@ int mtk_pe20_start_algorithm(struct charger_manager *pinfo)
 
 	if (!pe20->is_connect) {
 		ret = -EIO;
-		chr_info("%s: stop, PE+20 is not connected\n",
+		chr_debug("%s: stop, PE+20 is not connected\n",
 			__func__);
 		wake_unlock(&pe20->suspend_lock);
 		mutex_unlock(&pe20->access_lock);

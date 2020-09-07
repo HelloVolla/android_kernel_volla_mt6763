@@ -532,7 +532,7 @@ resume_end:
 		hps_restart_timer();
 	}
 #endif
-	hps_warn("%s state: %u, enabled: %u, suspend_enabled: %u, rush_boost_enabled: %u\n",
+	hps_debug("%s state: %u, enabled: %u, suspend_enabled: %u, rush_boost_enabled: %u\n",
 		 __func__, hps_ctxt.state, hps_ctxt.enabled,
 		 hps_ctxt.suspend_enabled, hps_ctxt.rush_boost_enabled);
 

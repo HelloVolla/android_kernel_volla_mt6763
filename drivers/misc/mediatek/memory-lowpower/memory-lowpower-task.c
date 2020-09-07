@@ -641,7 +641,7 @@ retry:
 	}
 out:
 	__end_ns = sched_clock();
-	pr_info("elapsed %llu ns\n", (__end_ns - __start_ns));
+	pr_debug("elapsed %llu ns\n", (__end_ns - __start_ns));
 
 	return NOTIFY_OK;
 }

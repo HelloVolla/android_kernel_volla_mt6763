@@ -85,7 +85,7 @@
 #define MTP_CONTAINER_TRANSACTION_ID_OFFSET     8
 #define MTP_CONTAINER_PARAMETER_OFFSET          12
 #define MTP_CONTAINER_HEADER_SIZE               12
-#define MTP_DBG(fmt, args...) pr_notice("MTP, <%s(), %d> " fmt, __func__, __LINE__, ## args)
+#define MTP_DBG(fmt, args...) pr_debug("MTP, <%s(), %d> " fmt, __func__, __LINE__, ## args)
 #define MTP_DBG_LIMIT(FREQ, fmt, args...) do {\
 	static DEFINE_RATELIMIT_STATE(ratelimit, HZ, FREQ);\
 	static int skip_cnt;\
@@ -94,7 +94,7 @@
 		pr_emerg(fmt "<unlimit>\n", ## args);\
 	else { \
 		if (__ratelimit(&ratelimit)) {\
-			pr_notice("MTP, <%s(), %d> " fmt ", skip_cnt<%d>\n", __func__, __LINE__, ## args, skip_cnt);\
+			pr_debug("MTP, <%s(), %d> " fmt ", skip_cnt<%d>\n", __func__, __LINE__, ## args, skip_cnt);\
 			skip_cnt = 0;\
 		} else\
 			skip_cnt++;\

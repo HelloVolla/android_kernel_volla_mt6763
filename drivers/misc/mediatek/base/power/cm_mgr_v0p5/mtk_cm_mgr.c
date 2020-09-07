@@ -173,11 +173,11 @@ static int cm_mgr_fb_notifier_callback(struct notifier_block *self, unsigned lon
 
 	switch (blank) {
 	case FB_BLANK_UNBLANK:
-		pr_info("#@# %s(%d) SCREEN ON\n", __func__, __LINE__);
+		pr_debug("#@# %s(%d) SCREEN ON\n", __func__, __LINE__);
 		cm_mgr_blank_status = 0;
 		break;
 	case FB_BLANK_POWERDOWN:
-		pr_info("#@# %s(%d) SCREEN OFF\n", __func__, __LINE__);
+		pr_debug("#@# %s(%d) SCREEN OFF\n", __func__, __LINE__);
 		cm_mgr_blank_status = 1;
 		/* unreq */
 		vcore_dram_opp = CM_MGR_EMI_OPP;

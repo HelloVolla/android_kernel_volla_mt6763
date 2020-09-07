@@ -245,7 +245,7 @@ int wk_auxadc_battmp_dbg(int bat_temp)
 	vbif = pmic_get_auxadc_value(AUXADC_LIST_VBIF);
 	bat_temp3 = pmic_get_auxadc_value(AUXADC_LIST_BATTEMP);
 	bat_id = pmic_get_auxadc_value(AUXADC_LIST_BATID);
-	pr_notice("BAT_TEMP1: %d, BAT_TEMP2:%d, VBIF:%d, BAT_TEMP3:%d, BATID:%d, DA_VBIF28_STB:%d\n",
+	pr_debug("BAT_TEMP1: %d, BAT_TEMP2:%d, VBIF:%d, BAT_TEMP3:%d, BATID:%d, DA_VBIF28_STB:%d\n",
 		bat_temp, bat_temp2, vbif, bat_temp3, bat_id, pmic_get_register_value(PMIC_DA_VBIF28_STB));
 
 	if (bat_temp < 200 ||
@@ -388,7 +388,7 @@ void mt6356_auxadc_monitor_mts_regs(void)
 		return;
 	mts_timestamp = mts_timestamp_cur;
 	mts_adc_tmp = pmic_get_register_value(PMIC_AUXADC_ADC_OUT_MDRT);
-	pr_notice("[MTS_ADC] OLD = 0x%x, NOW = 0x%x, CNT = %d\n", mts_adc, mts_adc_tmp, mts_count);
+	pr_debug("[MTS_ADC] OLD = 0x%x, NOW = 0x%x, CNT = %d\n", mts_adc, mts_adc_tmp, mts_count);
 
 	if (mts_adc ==  mts_adc_tmp)
 		mts_count++;
@@ -488,7 +488,7 @@ int mt6356_get_auxadc_value(u8 channel)
 
 	if (channel - AUXADC_LIST_MT6356_START < 0 ||
 			channel - AUXADC_LIST_MT6356_END > 0) {
-		pr_err("[%s] Invalid channel(%d)\n", __func__, channel);
+		pr_debug("[%s] Invalid channel(%d)\n", __func__, channel);
 		return -EINVAL;
 	}
 	auxadc_channel =
@@ -503,7 +503,7 @@ int mt6356_get_auxadc_value(u8 channel)
 	if (channel == AUXADC_LIST_VBIF) {
 		if (pmic_get_register_value(PMIC_BATON_TDET_EN)) {
 			tdet_tmp = 1;
-			pr_notice("pmic auxadc baton_tdet_en should be zero\n");
+			pr_debug("pmic auxadc baton_tdet_en should be zero\n");
 			pmic_set_register_value(PMIC_BATON_TDET_EN, 0);
 		}
 	}
@@ -516,12 +516,12 @@ int mt6356_get_auxadc_value(u8 channel)
 	while (pmic_get_register_value(auxadc_channel->channel_rdy) != 1) {
 		usleep_range(1300, 1500);
 		if ((count++) > count_time_out) {
-			pr_err("[%s] (%d) Time out! STA0=0x%x, STA1=0x%x, STA2=0x%x\n", __func__,
+			pr_debug("[%s] (%d) Time out! STA0=0x%x, STA1=0x%x, STA2=0x%x\n", __func__,
 				auxadc_channel->ch_num,
 				upmu_get_reg_value(MT6356_AUXADC_STA0),
 				upmu_get_reg_value(MT6356_AUXADC_STA1),
 				upmu_get_reg_value(MT6356_AUXADC_STA2));
-			pr_err("[%s] Reg[0x%x]=0x%x, RG_AUXADC_CK_PDN_HWEN=%d, RG_AUXADC_CK_TSTSEL=%d, RG_SMPS_CK_TSTSEL=%d\n",
+			pr_debug("[%s] Reg[0x%x]=0x%x, RG_AUXADC_CK_PDN_HWEN=%d, RG_AUXADC_CK_TSTSEL=%d, RG_SMPS_CK_TSTSEL=%d\n",
 				__func__,
 				MT6356_STRUP_CON6, upmu_get_reg_value(MT6356_STRUP_CON6),
 				pmic_get_register_value(PMIC_RG_AUXADC_CK_PDN_HWEN),
@@ -552,11 +552,11 @@ int mt6356_get_auxadc_value(u8 channel)
 				if (is_charging == 0)
 					bat_cur = 0 - bat_cur;
 				if (boot_time)
-					pr_notice("[%s] ch_idx = %d, channel = %d, bat_cur = %d, reg_val = 0x%x, adc_result = %d\n",
+					pr_debug("[%s] ch_idx = %d, channel = %d, bat_cur = %d, reg_val = 0x%x, adc_result = %d\n",
 					__func__, channel, auxadc_channel->ch_num, bat_cur, reg_val, adc_result);
 			} else {
 				if (boot_time)
-					pr_notice("[%s] ch_idx = %d, channel = %d, reg_val = 0x%x, adc_result = %d\n",
+					pr_debug("[%s] ch_idx = %d, channel = %d, reg_val = 0x%x, adc_result = %d\n",
 					__func__, channel, auxadc_channel->ch_num, reg_val, adc_result);
 			}
 		}
@@ -569,14 +569,14 @@ int mt6356_get_auxadc_value(u8 channel)
 		dbg_count++;
 		if (battmp != 0 &&
 		    (adc_result < 200 || ((adc_result - battmp) > 100) || ((battmp - adc_result) > 100))) {
-			pr_notice("VBIF28_OC_RAW_STATUS:%d\n",
+			pr_debug("VBIF28_OC_RAW_STATUS:%d\n",
 				pmic_get_register_value(PMIC_RG_INT_RAW_STATUS_VBIF28_OC));
 			if (pmic_get_register_value(PMIC_RG_INT_RAW_STATUS_VBIF28_OC) == 1)
 				pmic_set_register_value(PMIC_RG_INT_STATUS_VBIF28_OC, 1);
 			/* dump debug log when VBAT being abnormal */
-			pr_notice("old: %d, new: %d\n", battmp, adc_result);
+			pr_debug("old: %d, new: %d\n", battmp, adc_result);
 			adc_result = wk_auxadc_battmp_dbg(adc_result);
-			pr_notice("VBIF28_OC_RAW_STATUS:%d\n",
+			pr_debug("VBIF28_OC_RAW_STATUS:%d\n",
 				pmic_get_register_value(PMIC_RG_INT_RAW_STATUS_VBIF28_OC));
 			if (pmic_get_register_value(PMIC_RG_INT_RAW_STATUS_VBIF28_OC) == 1)
 				pmic_set_register_value(PMIC_RG_INT_STATUS_VBIF28_OC, 1);
@@ -584,7 +584,7 @@ int mt6356_get_auxadc_value(u8 channel)
 			if (aee_count < 2)
 				aee_kernel_warning("PMIC AUXADC:BAT TEMP", "BAT TEMP");
 			else
-				pr_notice("aee_count=%d\n", aee_count);
+				pr_debug("aee_count=%d\n", aee_count);
 			aee_count++;
 #endif
 		} else if (dbg_count % 50 == 0)

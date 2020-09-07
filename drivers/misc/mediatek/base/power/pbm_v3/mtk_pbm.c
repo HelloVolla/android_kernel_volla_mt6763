@@ -331,7 +331,7 @@ unsigned int ma_to_mw(unsigned int val)
 
 	bat_vol = get_battery_volt();	/* return mV */
 	ret_val = (bat_vol * val) / 1000;	/* mW = (mV * mA)/1000 */
-	pbm_crit("[%s] %d(mV) * %d(mA) = %d(mW)\n", __func__, bat_vol, val, ret_val);
+	pbm_debug("[%s] %d(mV) * %d(mA) = %d(mW)\n", __func__, bat_vol, val, ret_val);
 
 	return ret_val;
 }

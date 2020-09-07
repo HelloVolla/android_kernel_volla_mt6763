@@ -287,7 +287,7 @@ static bool system_mem_status_ok(unsigned long count)
 		}
 	}
 
-	pr_info("%s: free(%lu) file(%lu) high(%lu) count(%lu)\n",
+	pr_debug("%s: free(%lu) file(%lu) high(%lu) count(%lu)\n",
 			__func__, free, file, high_wmark, count);
 
 	/* Hope the system has as less memory reclaim as possible */
@@ -314,7 +314,7 @@ static bool zmc_check_mem_status_ok(unsigned long count)
 		available += minus;
 	}
 
-	pr_info("%s: count(%lu) free(%lu) available(%lu) minus(%lu)\n",
+	pr_debug("%s: count(%lu) free(%lu) available(%lu) minus(%lu)\n",
 			__func__, count, free, available, minus);
 
 	/*

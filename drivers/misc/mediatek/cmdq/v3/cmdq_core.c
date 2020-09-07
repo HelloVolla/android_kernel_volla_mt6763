@@ -1247,7 +1247,7 @@ void cmdq_core_free_hw_buffer(struct device *dev, size_t size, void *cpu_addr,
 void cmdq_core_create_buffer_pool(void)
 {
 	if (unlikely(g_task_buffer_pool)) {
-		CMDQ_LOG("Buffer pool already create pool:%p count:%d\n",
+		CMDQ_VERBOSE("Buffer pool already create pool:%p count:%d\n",
 			g_task_buffer_pool, (s32)atomic_read(&g_pool_buffer_count));
 		return;
 	}

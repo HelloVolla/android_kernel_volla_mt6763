@@ -1716,7 +1716,7 @@ static void adc_debug_init(void)
 		return;
 	}
 	proc_create("dump_auxadc_status", S_IRUGO | S_IWUSR, mt_auxadc_dir, &auxadc_debug_proc_fops);
-	pr_err("proc_create auxadc_debug_proc_fops\n");
+	pr_debug("proc_create auxadc_debug_proc_fops\n");
 }
 
 

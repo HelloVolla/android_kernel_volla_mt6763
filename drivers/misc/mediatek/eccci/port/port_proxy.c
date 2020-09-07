@@ -954,11 +954,11 @@ static inline int proxy_dispatch_recv_skb(struct port_proxy *proxy_p, int hif_id
 				/* check wakeup source */
 				switch (hif_id) {
 				case CCIF_HIF_ID:
-					CCCI_NOTICE_LOG(md_id, TAG, "CCIF_MD wakeup source:(%d/%d/%x)(%u)(%s)\n",
+					CCCI_DEBUG_LOG(md_id, TAG, "CCIF_MD wakeup source:(%d/%d/%x)(%u)(%s)\n",
 						port->rxq_index, channel, reserved, wakeup_count, port->user);
 					break;
 				case CLDMA_HIF_ID:
-					CCCI_NOTICE_LOG(md_id, TAG, "CLDMA_MD wakeup source:(%d/%d/%x)(%u)(%s)\n",
+					CCCI_DEBUG_LOG(md_id, TAG, "CLDMA_MD wakeup source:(%d/%d/%x)(%u)(%s)\n",
 						port->rxq_index, channel, reserved, wakeup_count, port->user);
 					break;
 				default:
