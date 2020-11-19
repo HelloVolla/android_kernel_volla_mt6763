@@ -157,7 +157,6 @@ config ANDROID_DEFAULT_SETTING
 	select PROC_FS
 	select PROFILING
 	select RTC_CLASS
-	select RT_GROUP_SCHED
 	select SECCOMP
 	select SECCOMP_FILTER
 	select SECURITY
