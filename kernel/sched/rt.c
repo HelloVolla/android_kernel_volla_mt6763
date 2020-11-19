@@ -2089,7 +2089,9 @@ static int push_rt_task(struct rq *rq)
 		return 0;
 
 retry:
+#ifdef CONFIG_RT_GROUP_SCHED
 	rt_rq = next_task->rt.rt_rq;
+#endif
 	if (unlikely(next_task == rq->curr)) {
 		WARN_ON(1);
 		return 0;
