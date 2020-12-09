@@ -33,7 +33,7 @@ extern struct hardware_info current_coulo_info;
 #define DC_CHARGING_FILE "/sys/class/power_supply/ac/online"
 */
 #define queue_delayed_work_time  8000
-#define CW_PROPERTIES "cw-bat"
+//#define CW_PROPERTIES "cw-bat"
 
 #define REG_VERSION             0x0
 #define REG_VCELL               0x2
