@@ -25,7 +25,20 @@
 #include <asm/cputype.h>
 #include <asm/topology.h>
 
+/*
+ * cpu capacity table
+ * This per cpu data structure describes the relative capacity of each core.
+ * On a heteregenous system, cores don't have the same computation capacity
+ * and we reflect that difference in the cpu_capacity field so the scheduler
+ * can take this difference into account during load balance. A per cpu
+ * structure is preferred because each CPU updates its own cpu_capacity field
+ * during the load balance except for idle cores. One idle core is selected
+ * to run the rebalance_domains for all idle cores and the cpu_capacity can be
+ * updated during this sequence.
+ */
 static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
+
+#include "topology_dts.c"
 
 unsigned long scale_cpu_capacity(struct sched_domain *sd, int cpu)
 {
@@ -191,9 +204,12 @@ static int __init parse_dt_topology(void)
 	 * When topology is provided cpu-map is essentially a root
 	 * cluster with restricted subnodes.
 	 */
-	map = of_get_child_by_name(cn, "cpu-map");
-	if (!map)
-		goto out;
+	map = of_get_child_by_name(cn, "virtual-cpu-map");
+	if (!map) {
+		map = of_get_child_by_name(cn, "cpu-map");
+		if (!map)
+			goto out;
+	}
 
 	ret = parse_cluster(map, 0);
 	if (ret != 0)
@@ -221,28 +237,56 @@ struct cpu_topology cpu_topology[NR_CPUS];
 EXPORT_SYMBOL_GPL(cpu_topology);
 
 /* sd energy functions */
-static inline
+inline
 const struct sched_group_energy * const cpu_cluster_energy(int cpu)
 {
 	struct sched_group_energy *sge = sge_array[cpu][SD_LEVEL1];
+#ifdef CONFIG_MTK_UNIFY_POWER
+	int cluster_id = cpu_topology[cpu].cluster_id;
+	struct upower_tbl_info **addr_ptr_tbl_info;
+	struct upower_tbl_info *ptr_tbl_info;
+	struct upower_tbl *ptr_tbl;
+#endif
 
 	if (!sge) {
 		pr_warn("Invalid sched_group_energy for Cluster%d\n", cpu);
 		return NULL;
 	}
 
+#ifdef CONFIG_MTK_UNIFY_POWER
+	addr_ptr_tbl_info = upower_get_tbl();
+	ptr_tbl_info = *addr_ptr_tbl_info;
+
+	ptr_tbl = ptr_tbl_info[UPOWER_BANK_CLS_BASE+cluster_id].p_upower_tbl;
+
+	sge->nr_cap_states = ptr_tbl->row_num;
+	sge->cap_states = ptr_tbl->row;
+	sge->lkg_idx = ptr_tbl->lkg_idx;
+#endif
+
 	return sge;
 }
 
-static inline
+inline
 const struct sched_group_energy * const cpu_core_energy(int cpu)
 {
 	struct sched_group_energy *sge = sge_array[cpu][SD_LEVEL0];
+#ifdef CONFIG_MTK_UNIFY_POWER
+	struct upower_tbl *ptr_tbl;
+#endif
 
 	if (!sge) {
 		pr_warn("Invalid sched_group_energy for CPU%d\n", cpu);
 		return NULL;
 	}
+
+#ifdef CONFIG_MTK_UNIFY_POWER
+	ptr_tbl = upower_get_core_tbl(cpu);
+
+	sge->nr_cap_states = ptr_tbl->row_num;
+	sge->cap_states = ptr_tbl->row;
+	sge->lkg_idx = ptr_tbl->lkg_idx;
+#endif
 
 	return sge;
 }
@@ -273,13 +317,21 @@ static struct sched_domain_topology_level arm64_topology[] = {
 
 static void update_cpu_capacity(unsigned int cpu)
 {
-	unsigned long capacity = SCHED_CAPACITY_SCALE;
-
+	u64 capacity = cpu_capacity(cpu);
+#ifndef CONFIG_MACH_MT6757
 	if (cpu_core_energy(cpu)) {
 		int max_cap_idx = cpu_core_energy(cpu)->nr_cap_states - 1;
 		capacity = cpu_core_energy(cpu)->cap_states[max_cap_idx].cap;
 	}
+#else
+	if (!capacity || !max_cpu_perf) {
+		cpu_capacity(cpu) = 0;
+		return;
+	}
 
+	capacity *= SCHED_CAPACITY_SCALE;
+	capacity = div64_u64(capacity, max_cpu_perf);
+#endif
 	set_capacity_scale(cpu, capacity);
 
 	pr_info("CPU%d: update cpu_capacity %lu\n",
@@ -368,8 +420,14 @@ static void __init reset_cpu_topology(void)
 	}
 }
 
+/*
+ * init_cpu_topology is called at boot when only one cpu is running
+ * which prevent simultaneous write access to cpu_topology array
+ */
 void __init init_cpu_topology(void)
 {
+	if (cpu_topology_init)
+		return;
 	reset_cpu_topology();
 
 	/*
@@ -381,5 +439,22 @@ void __init init_cpu_topology(void)
 	else
 		set_sched_topology(arm64_topology);
 
+	parse_dt_cpu_capacity();
+
 	init_sched_energy_costs();
 }
+
+#ifdef CONFIG_MTK_UNIFY_POWER
+static int
+cpu_capacity_sync(void)
+{
+	int cpu;
+
+	for_each_possible_cpu(cpu)
+		update_cpu_capacity(cpu);
+
+	return 0;
+}
+
+late_initcall_sync(cpu_capacity_sync)
+#endif

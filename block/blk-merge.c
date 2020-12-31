@@ -6,8 +6,10 @@
 #include <linux/bio.h>
 #include <linux/blkdev.h>
 #include <linux/scatterlist.h>
+#include <mt-plat/mtk_blocktag.h>
 
 #include <trace/events/block.h>
+#include <mt-plat/mtk_blocktag.h> /* MTK PATCH */
 
 #include "blk.h"
 
@@ -436,9 +438,13 @@ static int __blk_bios_map_sg(struct request_queue *q, struct bio *bio,
 	}
 
 	for_each_bio(bio)
-		bio_for_each_segment(bvec, bio, iter)
+		bio_for_each_segment(bvec, bio, iter) {
 			__blk_segment_map_sg(q, &bvec, sglist, &bvprv, sg,
 					     &nsegs, &cluster);
+#ifdef CONFIG_MTK_BLOCK_TAG
+			mtk_btag_pidlog_map_sg(q, bio, &bvec);
+#endif
+		}
 
 	return nsegs;
 }
@@ -667,6 +673,105 @@ static void blk_account_io_merge(struct request *req)
 	}
 }
 
+
+static int crypto_try_merge_bio(struct bio *bio, struct bio *nxt, int type)
+{
+	unsigned long iv_bio, iv_nxt;
+	struct bio_vec bv;
+	struct bvec_iter iter;
+	unsigned int count = 0;
+
+	iv_bio = bio_bc_iv_get(bio);
+	iv_nxt = bio_bc_iv_get(nxt);
+
+	if (iv_bio == BC_INVALD_IV || iv_nxt == BC_INVALD_IV)
+		return ELEVATOR_NO_MERGE;
+
+	bio_for_each_segment(bv, bio, iter)
+		count++;
+
+	if ((iv_bio + count) != iv_nxt)
+		return ELEVATOR_NO_MERGE;
+
+	return type;
+}
+
+static int crypto_try_merge(struct request *rq, struct bio *bio, int type)
+{
+	/* flag mismatch => don't merge */
+	if (rq->bio->bi_crypt_ctx.bc_flags != bio->bi_crypt_ctx.bc_flags)
+		return ELEVATOR_NO_MERGE;
+
+	/*
+	 * Check both sector and crypto iv here to make
+	 * sure blk_try_merge() allows merging only if crypto iv
+	 * is also allowed to fix below cases,
+	 *
+	 * rq and bio can do front-merge in sector view, but
+	 * not allowed by their crypto ivs.
+	 */
+	if (type == ELEVATOR_BACK_MERGE) {
+		if (blk_rq_pos(rq) + blk_rq_sectors(rq) !=
+		    bio->bi_iter.bi_sector)
+			return ELEVATOR_NO_MERGE;
+		return crypto_try_merge_bio(rq->biotail, bio, type);
+	} else if (type == ELEVATOR_FRONT_MERGE) {
+		if (bio->bi_iter.bi_sector + bio_sectors(bio) !=
+		    blk_rq_pos(rq))
+			return ELEVATOR_NO_MERGE;
+		return crypto_try_merge_bio(bio, rq->bio, type);
+	}
+
+	return ELEVATOR_NO_MERGE;
+}
+
+static bool crypto_not_mergeable(struct request *req, struct bio *nxt)
+{
+	struct bio *bio = req->bio;
+
+	/* If neither is encrypted, no veto from us. */
+	if (~(bio->bi_crypt_ctx.bc_flags | nxt->bi_crypt_ctx.bc_flags) &
+	    BC_CRYPT) {
+		return false;
+	}
+
+	/* If one's encrypted and the other isn't, don't merge. */
+	/* If one's using page index as iv, and the other isn't don't merge */
+	if ((bio->bi_crypt_ctx.bc_flags ^ nxt->bi_crypt_ctx.bc_flags)
+	    & (BC_CRYPT | BC_IV_PAGE_IDX))
+		return true;
+
+	/* If both using page index as iv */
+	if (bio->bi_crypt_ctx.bc_flags & nxt->bi_crypt_ctx.bc_flags &
+		BC_IV_PAGE_IDX) {
+		/* must be the same file on the same mount */
+		if ((bio_bc_sb(bio) != bio_bc_sb(nxt)) ||
+			(bio_bc_ino(bio) != bio_bc_ino(nxt)))
+			return true;
+		/*
+		 * Page index must be contiguous.
+		 *
+		 * Check both back and front direction because
+		 * req and nxt here are not promised any orders.
+		 *
+		 * For example, merge attempt from blk_attempt_plug_merge().
+		 */
+		if ((crypto_try_merge(req, nxt, ELEVATOR_BACK_MERGE) ==
+		     ELEVATOR_NO_MERGE) &&
+		    (crypto_try_merge(req, nxt, ELEVATOR_FRONT_MERGE) ==
+		     ELEVATOR_NO_MERGE))
+			return true;
+	}
+
+	/* If the key lengths are different or the keys aren't the
+	 * same, don't merge.
+	 */
+	return ((bio->bi_crypt_ctx.bc_key_size !=
+		 nxt->bi_crypt_ctx.bc_key_size) ||
+		(bio->bi_crypt_ctx.bc_keyring_key !=
+		 nxt->bi_crypt_ctx.bc_keyring_key));
+}
+
 /*
  * Has to be called with the request spinlock acquired
  */
@@ -692,6 +797,9 @@ static int attempt_merge(struct request_queue *q, struct request *req,
 
 	if (req_op(req) == REQ_OP_WRITE_SAME &&
 	    !blk_write_same_mergeable(req->bio, next->bio))
+		return 0;
+
+	if (crypto_not_mergeable(req, next->bio))
 		return 0;
 
 	/*
@@ -802,6 +910,9 @@ bool blk_rq_merge_ok(struct request *rq, struct bio *bio)
 	/* must be using the same buffer */
 	if (req_op(rq) == REQ_OP_WRITE_SAME &&
 	    !blk_write_same_mergeable(rq->bio, bio))
+		return false;
+
+	if (crypto_not_mergeable(rq, bio))
 		return false;
 
 	return true;

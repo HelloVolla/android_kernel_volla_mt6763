@@ -458,16 +458,17 @@ static void cpu_stopper_thread(unsigned int cpu)
 {
 	struct cpu_stopper *stopper = &per_cpu(cpu_stopper, cpu);
 	struct cpu_stop_work *work;
+	unsigned long flags;
 
 repeat:
 	work = NULL;
-	raw_spin_lock_irq(&stopper->lock);
+	raw_spin_lock_irqsave(&stopper->lock, flags);
 	if (!list_empty(&stopper->works)) {
 		work = list_first_entry(&stopper->works,
 					struct cpu_stop_work, list);
 		list_del_init(&work->list);
 	}
-	raw_spin_unlock_irq(&stopper->lock);
+	raw_spin_unlock_irqrestore(&stopper->lock, flags);
 
 	if (work) {
 		cpu_stop_fn_t fn = work->fn;
@@ -596,6 +597,42 @@ int stop_machine(cpu_stop_fn_t fn, void *data, const struct cpumask *cpus)
 	return ret;
 }
 EXPORT_SYMBOL_GPL(stop_machine);
+
+int cpu_park(int cpu)
+{
+	struct cpu_stopper *stopper = &per_cpu(cpu_stopper, cpu);
+
+	return !(stopper->enabled);
+}
+EXPORT_SYMBOL_GPL(cpu_park);
+
+/* queue @work to @stopper.  if offline, @work is completed immediately */
+static int __cpu_stop_dispatch_work(unsigned int cpu,
+		struct cpu_stop_work *work)
+{
+	struct cpu_stopper *stopper = &per_cpu(cpu_stopper, cpu);
+	unsigned long flags;
+	int ret = 0;
+
+	raw_spin_lock_irqsave(&stopper->lock, flags);
+	if (stopper->enabled)
+		__cpu_stop_queue_work(stopper, work);
+	else {
+			cpu_stop_signal_done(work->done);
+			ret = 1;
+		}
+	raw_spin_unlock_irqrestore(&stopper->lock, flags);
+
+	return ret;
+}
+
+int stop_one_cpu_dispatch(unsigned int cpu, cpu_stop_fn_t fn, void *arg,
+				struct cpu_stop_work *work_buf)
+{
+	*work_buf = (struct cpu_stop_work){ .fn = fn, .arg = arg, };
+	return __cpu_stop_dispatch_work(cpu, work_buf);
+}
+EXPORT_SYMBOL_GPL(stop_one_cpu_dispatch);
 
 /**
  * stop_machine_from_inactive_cpu - stop_machine() from inactive CPU

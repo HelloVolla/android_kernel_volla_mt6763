@@ -23,6 +23,7 @@
 #include <linux/swap.h>
 #include <linux/printk.h>
 #include <linux/vmpressure.h>
+#include <mt-plat/mtk_memcfg.h>
 
 /*
  * The window size (vmpressure_win) is the number of scanned pages before
@@ -38,7 +39,7 @@
  * TODO: Make the window size depend on machine size, as we do for vmstat
  * thresholds. Currently we set it to 512 pages (2MB for 4KB pages).
  */
-static const unsigned long vmpressure_win = SWAP_CLUSTER_MAX * 16;
+unsigned long vmpressure_win = SWAP_CLUSTER_MAX * 16;
 
 /*
  * These thresholds are used when we account memory pressure through
@@ -46,8 +47,8 @@ static const unsigned long vmpressure_win = SWAP_CLUSTER_MAX * 16;
  * essence, they are percents: the higher the value, the more number
  * unsuccessful reclaims there were.
  */
-static const unsigned int vmpressure_level_med = 60;
-static const unsigned int vmpressure_level_critical = 95;
+unsigned int vmpressure_level_med = 60;
+unsigned int vmpressure_level_critical = 95;
 
 /*
  * When there are too little pages left to scan, vmpressure() may miss the
@@ -149,6 +150,10 @@ static bool vmpressure_event(struct vmpressure *vmpr,
 {
 	struct vmpressure_event *ev;
 	bool signalled = false;
+
+#ifdef CONFIG_MTK_ENG_BUILD
+	mtk_memcfg_inform_vmpressure();
+#endif
 
 	mutex_lock(&vmpr->events_lock);
 

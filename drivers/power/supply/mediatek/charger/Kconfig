@@ -1,0 +1,251 @@
+config MTK_CHARGER
+	bool "MediaTek Charging Driver"
+	depends on MEDIATEK_SOLUTION
+	default n
+	help
+	  Say yes here to enable MediaTek charging driver.
+	  This driver contains charging control flow and
+	  maintains charging status.
+	  Say no if not using MediaTek charging driver.
+
+config POWER_EXT
+	bool "MediaTek Power Ext"
+	default n
+	help
+	  Check this if the device is not powered by battery.
+	  For example, if the device is powered by AC adapter.
+	  Select No if the device needs info about
+	  battery voltage, temperature, etc.
+
+config MTK_SWCHR_SUPPORT
+	bool "MediaTek switch charger"
+	default n
+	depends on MTK_CHARGER
+	help
+	  This is to enable switching charger control flow.
+	  switching charger has better performance than pulse charger
+	  Set to yes if switching charger is used.
+	  Set to no if pmic pulse charger is used.
+
+config MTK_KERNEL_POWER_OFF_CHARGING
+	bool "MTK kernel power off charging"
+	default n
+	depends on MTK_CHARGER
+	help
+	  yes : support KPOC feature, power off charging would running by
+	  kernel and charging animation by kpoc service. no: not support KPOC
+	  feature.
+	  device won't enter charging mode if config is no.
+
+config MTK_PUMP_EXPRESS_PLUS_SUPPORT
+	bool "MediaTek PUMP EXPRESS PLUS"
+	default n
+	depends on MTK_CHARGER
+	help
+	  Fast charging technology using switch charger and current pattern
+	  to achive better charging ability.
+	  Set Yes to enable PE+
+	  Set No to disable PE+
+
+config MTK_PUMP_EXPRESS_PLUS_20_SUPPORT
+	bool "MediaTek PUMP EXPRESS PLUS 2.0"
+	default n
+	depends on MTK_CHARGER
+	help
+	  Fast charging technology using switch charger and current pattern
+	  to achive better charging ability. It has higher charging efficiency
+	  and has better thermal performance than PE+.
+	  Set Yes to enable PE+2.0
+	  Set No to disable PE+2.0
+
+# prize add by sunshuai for Bright screen current limit  20190110 start
+config PRIZE_CHARGE_CTRL_POLICY
+	bool "PRIZE_CHARGE_CTRL_POLICY"
+	default y
+	help
+	  This is used to PRIZE_CHARGE_CTRL_POLICY
+# prize  add by sunshuai for Bright screen current limit  20190110 end
+	  
+config MTK_DUAL_CHARGER_SUPPORT
+	bool "MediaTek dual charger support"
+	default n
+	depends on MTK_CHARGER
+	help
+	  Use two charging ICs (master and slave) to charge the system.
+	  The master IC is connected to VBUS, VSYS, and VBAT, the slave
+	  IC is conneceted to PMID pin from the master and VBAT.
+	  Say Yes to enable dual charger support.
+
+config SWCHR_POWER_PATH
+	bool "External charger IC supports powerpath"
+	default n
+	depends on MTK_CHARGER
+	help
+	  Set Yes if the external charger IC
+	  supports power path function.
+	  This affects setting of auxadc channels
+	  used to representing voltage of system
+	  or battery.
+
+config CHARGER_RT9465
+	bool "Charger Driver for Richtek RT9465 Charger IC"
+	default n
+	depends on MTK_CHARGER
+	help
+	  Say Yes to enable Richtek RT9465 driver.
+	  It is mainly used as slave IC for dual charger
+	  application.
+	  It depends on config MTK_CHARGER.
+
+config CHARGER_RT9471
+	bool "Charger Driver for Richtek RT9471 Charger IC"
+	default n
+	depends on MTK_CHARGER
+	help
+	  Say Yes to enable Richtek RT9471 driver.
+	  It supports RT9470/RT9470D/RT9471/RT9471D,
+	  which RT9470D and RT9471D support BC1.2
+	  It depends on config MTK_CHARGER.
+
+config MTK_CHARGER_UNLIMITED
+	bool "MediaTek Charger Unlimited"
+	default n
+	depends on MTK_CHARGER
+	help
+	  Say Yes to release charging current restrictions.
+	  Say No to not release charging current restrictions.
+	  It is mainly used for long-term tests.
+	  It depends on config MTK_CHARGER.
+
+config MTK_BQ24196_SUPPORT
+	bool "MediaTek Battery driver for TI BQ24196"
+	help
+	  BQ24196 charger IC support
+	  This is to enable MediaTek supports to BQ24196.
+	  It depends on config MTK_SMART_BATTERY
+	  and config MTK_SWCHR_SUPPORT
+	  Set to Yes if BQ24196 is used.
+
+config MTK_BQ24296_SUPPORT
+	bool "MTK_BQ24296_SUPPORT"
+	help
+	  This is to enable MediaTek supports to BQ24296.
+	  It depends on config MTK_SMART_BATTERY
+	  and config MTK_SWCHR_SUPPORT
+	  Set to Yes if BQ24296 is used.
+
+config CHARGER_BQ25601
+	bool "CHARGER_BQ25601"
+	help
+	  This is to enable MediaTek supports to BQ25601.
+	  It depends on config MTK_SMART_BATTERY
+	  and config MTK_SWCHR_SUPPORT
+	  Set to Yes if BQ25601 is used.
+
+config MTK_BQ25890_SUPPORT
+	bool "Charger driver for TI BQ25890 charger IC"
+	default n
+	depends on MTK_CHARGER
+	help
+	  This is to enable MediaTek support to BQ25890.
+	  It also supports BC1.2 function.
+	  It depends on config MTK_CHARGER.
+	  Say yes to enable BQ25890 charger driver.
+#//prize added by huarui, hl7005 support, 20190111-start 
+config HIGH_BATTERY_VOLTAGE_SUPPORT_44
+	bool "Support battery 4.4V"
+	default n
+	help
+	  Set Yes to config if 4.4V battery is to be supported.
+
+config HL7005ALL_CHARGER_SUPPORT
+	bool "Charger Driver for Halo HL7005 Charger IC"
+	default n
+	help
+	  Say Y to enable
+	  Halo HL7005 driver.
+	  It depends on config MTK_SMART_BATTERY
+	  and config MTK_SWCHR_SUPPORT.
+
+config PSC5415A_56MR_SUPPORT
+	bool "Modifile Halo HL7005 Charger IC driver as PSC5415A with 56mr"
+	default n
+	depends on HL7005ALL_CHARGER_SUPPORT
+	help
+	  Say Y to enable PSC5415A driver.
+	  It depends on config MTK_SMART_BATTERY
+	  and config MTK_SWCHR_SUPPORT.
+
+config PSC5415A_68MR_SUPPORT
+	bool "Modifile Halo HL7005 Charger IC driver as PSC5415A with 68mr"
+	default n
+	depends on HL7005ALL_CHARGER_SUPPORT
+	help
+	  Say Y to enable PSC5415A driver.
+	  It depends on config MTK_SMART_BATTERY
+	  and config MTK_SWCHR_SUPPORT.
+
+config PSC5425_40MR_SUPPORT
+	bool "Modifile Halo HL7005 Charger IC driver as PSC5425 with 40mr"
+	default n
+	depends on HL7005ALL_CHARGER_SUPPORT
+	help
+	  Say Y to enable PSC5425 driver.
+	  It depends on config MTK_SMART_BATTERY
+	  and config MTK_SWCHR_SUPPORT.
+
+config PSC5425_33MR_SUPPORT
+	bool "Modifile Halo HL7005 Charger IC driver as PSC5425 with 33mr"
+	default n
+	depends on HL7005ALL_CHARGER_SUPPORT
+	help
+	  Say Y to enable PSC5425 driver.
+#//prize added by huarui, hl7005 support, 20190111-end
+
+#//prize added by huarui, ne6153 support, 20190111-start
+config PRIZE_NE6153_SUPPORT
+	bool "PRIZE_NE6153_SUPPORT"
+	help
+	  Set to Yes if NE6153 is used.
+#//prize added by huarui, ne6153 support, 20190111-end
+
+#//prize added by huarui, wireless charge soft start, 20190111-start
+config PRIZE_WLC_SOFT_START
+	bool "PRIZE_WLC_SOFT_START"
+	default n
+	help
+	  This is used to PRIZE_WLC_SOFT_START
+#//prize added by huarui, wireless charge soft start, 20190111-end
+
+# prize, prize-sunshuai-20200111, add for wireless power receiver mt5715 start 
+config PRIZE_WIRELESS_RECEIVER_MAXIC_MT5715
+        bool "driver for Wireless Power Receiver MAXIC MT5715 IC"
+        default n
+        help
+          Set to Yes if MT5715 is used.
+# prize, prize-sunshuai-20200111, add for wireless power receiver mt5715 end
+
+#//prize added by sunshuai, mt5725-15W support, 20200507-start
+config PRIZE_MT5725_SUPPORT_15W
+	bool "PRIZE_MT5725_SUPPORT_15W"
+	default n
+	help
+	  Set to Yes if mt5725_15W is used.
+#//prize added by sunshuai, mt5725-15W support, 20200507-end
+
+
+# prize-add by sunshuai for German customer gigast requires charging to be controlled according to the battery specification 20190617 start
+config  PRIZE_CHARGE_CTRL_GIGAST
+        bool "Charging is controlled according to the battery specification"
+        default n
+        help
+           This is used to PRIZE_CHARGE_CTRL_GIGAST
+# prize-add by sunshuai for German customer gigast requires charging to be controlled according to the battery specification 20190617 end
+
+# prize-add by sunshuai for German customers Charging restrictions  20200604 start
+config  PRIZE_GIGASET_CHARGE_RESTRICTION
+        bool "Charging restrictions"
+        default n
+        help
+           This is used to PRIZE_GIGASET_CHARGE_RESTRICTION
+# prize-add by sunshuai for  German customers Charging restrictions 20200604 end

@@ -11,8 +11,11 @@
 /*
  * Time out in seconds for disks and Magneto-opticals (which are slower).
  */
-#define SD_TIMEOUT		(30 * HZ)
+/* MTK PATCH: Max SCSI cmd timeout = 1.2s * 32QueueDepth ~= 39s */
+#define SD_TIMEOUT		(39 * HZ)
 #define SD_MOD_TIMEOUT		(75 * HZ)
+#define SD_DISCARD_TIMEOUT	(100 * HZ)
+
 /*
  * Flush timeout is a multiplier over the standard device timeout which is
  * user modifiable via sysfs but initially set to SD_TIMEOUT
@@ -149,11 +152,6 @@ static inline int scsi_medium_access_command(struct scsi_cmnd *scmd)
 static inline sector_t logical_to_sectors(struct scsi_device *sdev, sector_t blocks)
 {
 	return blocks << (ilog2(sdev->sector_size) - 9);
-}
-
-static inline unsigned int logical_to_bytes(struct scsi_device *sdev, sector_t blocks)
-{
-	return blocks * sdev->sector_size;
 }
 
 /*

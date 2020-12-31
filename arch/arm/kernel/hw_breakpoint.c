@@ -257,6 +257,9 @@ static int enable_monitor_mode(void)
 	case ARM_DEBUG_ARCH_V7_ECP14:
 	case ARM_DEBUG_ARCH_V7_1:
 	case ARM_DEBUG_ARCH_V8:
+	case ARM_DEBUG_ARCH_V8_1:
+	case ARM_DEBUG_ARCH_V8_2:
+	case ARM_DEBUG_ARCH_V8_4:
 		ARM_DBG_WRITE(c0, c2, 2, (dscr | ARM_DSCR_MDBGEN));
 		isb();
 		break;
@@ -929,6 +932,14 @@ static void reset_ctrl_regs(void *unused)
 {
 	int i, raw_num_brps, err = 0, cpu = smp_processor_id();
 	u32 val;
+
+#ifdef CONFIG_MTK_WATCHPOINT
+	/*
+	 * mediatek uses its own watchpoint & breakpoint save/restore flow,
+	 * so that we do not need kernel's reset flow.
+	 */
+	return;
+#endif
 
 	/*
 	 * v7 debug contains save and restore registers so that debug state

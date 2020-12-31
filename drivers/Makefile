@@ -4,6 +4,7 @@
 # 15 Sep 2000, Christoph Hellwig <hch@infradead.org>
 # Rewritten to use lists instead of if-statements.
 #
+subdir-ccflags-y += -Werror
 
 obj-y				+= irqchip/
 obj-y				+= bus/
@@ -176,3 +177,11 @@ obj-$(CONFIG_ANDROID)		+= android/
 obj-$(CONFIG_NVMEM)		+= nvmem/
 obj-$(CONFIG_FPGA)		+= fpga/
 obj-$(CONFIG_TEE)		+= tee/
+obj-$(CONFIG_TRUSTY)	+= trusty/
+# prize-wyq 20190505, for project config-start
+ifneq ($(CONFIG_PROJECT_KOOBEE), "")
+project_koobee := $(subst ",,$(CONFIG_PROJECT_KOOBEE))
+project_koobee := $(shell echo $(project_koobee) | tr '[a-z]' '[A-Z]')
+KBUILD_CFLAGS += -DCONFIG_PROJECT_KOOBEE_$(project_koobee)
+endif
+# prize-wyq 20190505, for project config-end

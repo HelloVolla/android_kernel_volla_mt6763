@@ -271,6 +271,18 @@ config COMPACTION
           it and then we would be really interested to hear about that at
           linux-mm@kvack.org.
 
+config PROCESS_RECLAIM
+	bool "Enable process reclaim"
+	depends on PROC_FS
+	default n
+	help
+	 It allows to reclaim pages of the process by /proc/pid/reclaim.
+
+	 (echo file > /proc/PID/reclaim) reclaims file-backed pages only.
+	 (echo anon > /proc/PID/reclaim) reclaims anonymous pages only.
+	 (echo all > /proc/PID/reclaim) reclaims all pages.
+
+	 Any other value is ignored.
 #
 # support for page migration
 #
@@ -330,6 +342,7 @@ config MMU_NOTIFIER
 config KSM
 	bool "Enable KSM for page merging"
 	depends on MMU
+	depends on !MTK_ENABLE_AGO
 	help
 	  Enable Kernel Samepage Merging: KSM periodically scans those areas
 	  of an application's address space that an app has advised may be
@@ -518,6 +531,19 @@ config CMA
 
 	  If unsure, say "n".
 
+config ZONE_MOVABLE_CMA
+	bool "Contiguous Memory Allocator by ZONE_MOVABLE"
+	select CMA
+	depends on HAVE_MEMBLOCK && MMU && MTK_MEM
+	default y
+	help
+	  This enable the support of ZONE MOVALBE Contiguous Memory Allocator.
+	  Traditional CMA is based on a "fallback logic". The system takes
+	  CMA memory only when it runs out of normal memory and makes the
+	  utilization of CMA low. With ZONE_MOVABLE_CMA, we use a movable zone
+	  to manage CMA memory, all movable pages will be allocated from this
+	  zone first and make utilization of CMA memory high.
+
 config CMA_DEBUG
 	bool "CMA debug messages (DEVELOPMENT)"
 	depends on DEBUG_KERNEL && CMA
@@ -607,6 +633,7 @@ config ZSMALLOC
 	tristate "Memory allocator for compressed pages"
 	depends on MMU
 	default n
+	select PGTABLE_MAPPING if (ARM || ARM64)
 	help
 	  zsmalloc is a slab-based memory allocator designed to store
 	  compressed RAM pages.  zsmalloc uses virtual memory mapping
@@ -705,6 +732,8 @@ config ZONE_DEVICE
 
 	  If FS_DAX is enabled, then say Y.
 
+config ARCH_HAS_PTE_SPECIAL
+	bool
 config FRAME_VECTOR
 	bool
 

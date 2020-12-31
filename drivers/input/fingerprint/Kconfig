@@ -1,0 +1,98 @@
+#
+#Fingerprint
+#
+menu "Fingerprint support"
+	depends on INPUT
+
+config SUNWAVE_TEE_FINGERPRINT
+    bool "SW Fingerprint"
+    default n
+    ---help---
+    SW fingerprint chip.
+
+config MTK_FINGERPRINT_SUPPORT
+	bool "Mediatek Fingerprint"
+	default n
+	help
+	  Fingerprint mtk driver enable/disable in the kernel.
+	  Say Y here if you want to use mediatek fingerprint driver,
+	  fingerprint driver will support fingerprint function
+#prize-add-pengzhipeng-20200302-start
+config NAVIGATION_FUNCTION 
+       bool "Sunwave Fingerprint"
+       default y
+	---help---
+     Navigation function up f1 down f2 left f3 right f4
+#prize-add-pengzhipeng-20200302-end
+
+if MTK_FINGERPRINT_SUPPORT
+config MTK_FINGERPRINT_SELECT
+	string "sensor type"
+	default "GF318M"
+
+
+if MTK_FINGERPRINT_SELECT = "FPC1145"
+config FPC_FINGERPRINT
+	bool "FPC Fingerprint"
+	default y
+	help
+	  FPC fingerprint FPC's 102x/104x device.
+endif
+
+if MTK_FINGERPRINT_SELECT = "GF318M" ||  MTK_FINGERPRINT_SELECT = "GF5216"
+config GOODIX_FINGERPRINT
+	bool "Goodix Fingerprint"
+	default y
+	help
+	  Goodix Fingerprint chip GF316M/GF318M/GF3118M/GF518M/GF5118M/GF516M/GF816M/GF3208/GF3206/
+	  GF3266/GF3288/GF5206/GF5216/GF5208 TEE driver
+
+config GOODIX_SENSOR_TYPE
+	string "SENSOR_TYPE"
+	default "GF5216"
+	help
+	  Must input sensor type, or default is GF316M GF318M GF3118M GF518M GF5118M GF516M GF816M
+	  GF3208 GF3206 GF3266 GF3288 GF5206 GF5216 GF5208
+endif
+#prize-add-pengzhipeng-20191105-start
+#prize add by lipengpeng 20191217 start 
+if MTK_FINGERPRINT_SELECT = "microarray_fp"
+  config MICROARRAY_FINGERPRINT
+     bool "SUNWAVE Fingerprint"
+     default y
+     ---help---
+     MICROARRAY fingerprint SUNWAVE's device.
+endif
+if MTK_FINGERPRINT_SELECT = "sunwavecorp_fp"
+  config SUNWAVE_FINGERPRINT
+     bool "SUNWAVE Fingerprint"
+     default y
+     ---help---
+     MICROARRAY fingerprint SUNWAVE's device.
+endif
+#prize add by lipengpeng 20191217 end
+if MTK_FINGERPRINT_SELECT = "ft9362"
+  config FT9362_FINGERPRINT
+     bool "FT9362 Fingerprint"
+     default y
+     ---help---
+     MICROARRAY fingerprint FT9362's device.
+endif
+
+if MTK_FINGERPRINT_SELECT = "ft9362_tee"
+  config FT9362_FINGERPRINT_TEE
+     bool "FT9362 TEE Fingerprint"
+     default y
+     ---help---
+     MICROARRAY fingerprint FT9362 TEE's device.
+endif
+if MTK_FINGERPRINT_SELECT = "sunwave_driver_all_in_one"
+  config MTK_FINGERPRINT_SUNWAVECORP
+       bool "Sunwave Fingerprint"
+       default y
+	---help---
+     MICROARRAY fingerprint Sunwave's device.
+endif
+#prize-add-pengzhipeng-20191105-end
+endif
+endmenu

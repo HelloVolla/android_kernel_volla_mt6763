@@ -17,9 +17,49 @@
 #include <linux/bitops.h>
 #include <linux/device.h>
 
-#ifdef CONFIG_MTK_SMI
+#if IS_ENABLED(CONFIG_MTK_SMI_EXT)
+#include <linux/platform_device.h>
 
-#define MTK_LARB_NR_MAX		8
+struct mtk_smi_pair {
+	unsigned int	offset;
+	unsigned int	value;
+};
+
+struct mtk_smi_dev {
+	unsigned int	index;
+	struct device	*dev;
+	void __iomem	*base;
+	unsigned int	*mmu;
+
+	unsigned int	nr_clks;
+	struct clk	**clks;
+	atomic_t	clk_ref_cnts;
+
+	unsigned int		nr_config_pairs;
+	struct mtk_smi_pair	*config_pairs;
+
+	unsigned int		nr_scens;
+	unsigned int		nr_scen_pairs;
+	struct mtk_smi_pair	**scen_pairs;
+
+	unsigned int	nr_debugs;
+	unsigned int	*debugs;
+	unsigned int	busy_cnts;
+};
+
+extern struct mtk_smi_dev *common;
+extern struct mtk_smi_dev **larbs;
+int mtk_smi_clk_ref_cnts_read(struct mtk_smi_dev *smi);
+int mtk_smi_dev_enable(struct mtk_smi_dev *smi);
+int mtk_smi_dev_disable(struct mtk_smi_dev *smi);
+int mtk_smi_config_set(struct mtk_smi_dev *smi, const unsigned int scen_indx);
+
+int smi_register(struct platform_driver *drv);
+int smi_unregister(struct platform_driver *drv);
+#endif
+#if IS_ENABLED(CONFIG_MTK_SMI)
+
+#define MTK_LARB_NR_MAX		16
 
 #define MTK_SMI_MMU_EN(port)	BIT(port)
 

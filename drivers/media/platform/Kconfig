@@ -33,6 +33,16 @@ source "drivers/media/platform/omap/Kconfig"
 
 source "drivers/media/platform/blackfin/Kconfig"
 
+config MEDIATEK_OVL
+	tristate "Mediatek Overlay driver"
+	depends on VIDEO_DEV && VIDEO_V4L2 && ARCH_MEDIATEK
+	select VIDEOBUF2_DMA_CONTIG
+	---help---
+	   Mediatek Overlay driver is a framework of V4L2.
+	   Defaultly it is disable. Set when v4l2 Video mediatek
+	   overlay is needed. When it is enable, related
+	   mediatek overlay driver will be included.
+
 config VIDEO_SH_VOU
 	tristate "SuperH VOU video output driver"
 	depends on MEDIA_CAMERA_SUPPORT
@@ -162,6 +172,43 @@ config VIDEO_CODA
 	   Coda is a range of video codec IPs that supports
 	   H.264, MPEG-4, and other video formats.
 
+config VIDEO_MEDIATEK_JPEG
+	tristate "Mediatek JPEG Codec driver"
+	depends on VIDEO_DEV && VIDEO_V4L2
+	depends on ARCH_MEDIATEK || COMPILE_TEST
+	select VIDEOBUF2_DMA_CONTIG
+	select V4L2_MEM2MEM_DEV
+	---help---
+	  Mediatek jpeg codec driver provides HW capability to decode
+	  JPEG format
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called mtk-jpeg
+
+config VIDEO_MEDIATEK_NR
+	tristate "Mediatek Noise Reduce driver"
+	depends on VIDEO_DEV && VIDEO_V4L2
+	depends on ARCH_MEDIATEK || COMPILE_TEST
+	select VIDEOBUF2_DMA_CONTIG
+	select V4L2_MEM2MEM_DEV
+	---help---
+	  Mediatek nr driver provides HW capability to decode
+
+	  To compile this driver as a module, choose M here: the
+	  module will be called mtk-nr
+
+config VIDEO_MEDIATEK_VCU
+	tristate "Mediatek Video Communication/Controller Unit"
+	depends on VIDEO_DEV && VIDEO_V4L2
+	---help---
+	    This driver provides downloading VCU firmware and
+	    communicating with VPU. This driver for hw video
+	    codec embedded in Mediatek's MT8173 SOCs. It is able
+	    to handle video decoding/encoding in a range of formats.
+
+	    To compile this driver as a module, choose M here: the
+	    module will be called mtk-vcu.
+
 config VIDEO_MEDIATEK_VPU
 	tristate "Mediatek Video Processor Unit"
 	depends on VIDEO_DEV && VIDEO_V4L2 && HAS_DMA
@@ -175,19 +222,79 @@ config VIDEO_MEDIATEK_VPU
 	    To compile this driver as a module, choose M here: the
 	    module will be called mtk-vpu.
 
-config VIDEO_MEDIATEK_VCODEC
-	tristate "Mediatek Video Codec driver"
+config VIDEO_MEDIATEK_MDP
+	tristate "Mediatek MDP driver"
 	depends on MTK_IOMMU || COMPILE_TEST
-	depends on VIDEO_DEV && VIDEO_V4L2 && HAS_DMA
+	depends on VIDEO_DEV && VIDEO_V4L2
 	depends on ARCH_MEDIATEK || COMPILE_TEST
+	depends on HAS_DMA
 	select VIDEOBUF2_DMA_CONTIG
 	select V4L2_MEM2MEM_DEV
 	select VIDEO_MEDIATEK_VPU
 	default n
 	---help---
+	    It is a v4l2 driver and present in Mediatek MT8173 SoCs.
+	    The driver supports for scaling and color space conversion.
+
+	    To compile this driver as a module, choose M here: the
+	    module will be called mtk-mdp.
+
+config VIDEO_MEDIATEK_MDP_VCU
+        tristate "Mediatek MDP driver which depends on VCU"
+        depends on MTK_IOMMU || COMPILE_TEST
+        depends on VIDEO_DEV && VIDEO_V4L2
+        depends on ARCH_MEDIATEK || COMPILE_TEST
+        depends on HAS_DMA
+        select VIDEOBUF2_DMA_CONTIG
+        select V4L2_MEM2MEM_DEV
+        select VIDEO_MEDIATEK_VCU
+        select MTK_CMDQ
+        ---help---
+            It is a v4l2 driver which depends on VCU driver.
+            The driver supports for scaling and color space conversion.
+
+            To compile this driver as a module, choose M here: the
+            module will be called mtk-mdp.
+
+config VIDEO_MEDIATEK_VCU_WO_FUSE
+	bool "VCU driver without FUSE"
+	depends on VIDEO_MEDIATEK_VCU
+	default n
+	---help---
+	    VCU dirver is dependent on FUSE by default, the latency of
+	    ipi send from kernel to FUSE daemon is a little long.
+	    To reduce the latency and remove dependency to FUSE, choose
+	    Y here.
+
+config VB2_MEDIATEK_DMA_CONTIG
+	bool "MEDIATEK V4L2 driver with DMA CONTIG"
+	depends on VIDEO_MEDIATEK_VCODEC
+	default n
+	---help---
+	    For SVP, can't access secure memory in normal world.
+	    MEDIATEK V4L2 driver will use proprietary DMA contig
+	    functions to handle DMA and bypass memory access.
+	    To enable proprietary functions, choose Y here.
+
+config VIDEO_MEDIATEK_MDP_FRVC
+	bool "Mediatek MDP Support Fast-RVC driver"
+	depends on VIDEO_MEDIATEK_MDP
+	---help---
+	  This driver is part of fast rear video camera feature.
+	  It provides support of fast rear video camera in MDP.
+	  Default is disable
+	  Set y when Fast-RVC is needed
+
+config VIDEO_MEDIATEK_VCODEC
+	tristate "Mediatek Video Codec driver"
+	depends on VIDEO_DEV && VIDEO_V4L2 && HAS_DMA
+	select VIDEOBUF2_DMA_CONTIG
+	select V4L2_MEM2MEM_DEV
+	select VIDEO_MEDIATEK_VCU
+	---help---
 	    Mediatek video codec driver provides HW capability to
 	    encode and decode in a range of video formats
-	    This driver rely on VPU driver to communicate with VPU.
+	    This driver rely on VCU driver to communicate with VPU.
 
 	    To compile this driver as a module, choose M here: the
 	    module will be called mtk-vcodec

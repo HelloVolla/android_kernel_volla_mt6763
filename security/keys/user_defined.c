@@ -123,7 +123,7 @@ EXPORT_SYMBOL_GPL(user_update);
  */
 void user_revoke(struct key *key)
 {
-	struct user_key_payload *upayload = user_key_payload_locked(key);
+	struct user_key_payload *upayload = key->payload.data[0];
 
 	/* clear the quota */
 	key_payload_reserve(key, 0);

@@ -55,6 +55,7 @@ struct fence_cb;
  * of the time.
  *
  * FENCE_FLAG_SIGNALED_BIT - fence is already signaled
+ * FENCE_FLAG_TIMESTAMP_BIT - timestamp recorded for fence signaling
  * FENCE_FLAG_ENABLE_SIGNAL_BIT - enable_signaling might have been called*
  * FENCE_FLAG_USER_BITS - start of the unused bits, can be used by the
  * implementer of the fence for its own purposes. Can be used in different
@@ -84,6 +85,7 @@ struct fence {
 
 enum fence_flag_bits {
 	FENCE_FLAG_SIGNALED_BIT,
+	FENCE_FLAG_TIMESTAMP_BIT,
 	FENCE_FLAG_ENABLE_SIGNAL_BIT,
 	FENCE_FLAG_USER_BITS, /* must always be last member */
 };
@@ -274,6 +276,7 @@ int fence_add_callback(struct fence *fence, struct fence_cb *cb,
 		       fence_func_t func);
 bool fence_remove_callback(struct fence *fence, struct fence_cb *cb);
 void fence_enable_sw_signaling(struct fence *fence);
+void fence_enable_sw_signaling_nolock(struct fence *fence);
 
 /**
  * fence_is_signaled_locked - Return an indication if the fence is signaled yet.

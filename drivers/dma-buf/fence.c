@@ -73,11 +73,6 @@ int fence_signal_locked(struct fence *fence)
 	if (WARN_ON(!fence))
 		return -EINVAL;
 
-	if (!ktime_to_ns(fence->timestamp)) {
-		fence->timestamp = ktime_get();
-		smp_mb__before_atomic();
-	}
-
 	if (test_and_set_bit(FENCE_FLAG_SIGNALED_BIT, &fence->flags)) {
 		ret = -EINVAL;
 
@@ -85,8 +80,11 @@ int fence_signal_locked(struct fence *fence)
 		 * we might have raced with the unlocked fence_signal,
 		 * still run through all callbacks
 		 */
-	} else
+	} else {
+		fence->timestamp = ktime_get();
+		set_bit(FENCE_FLAG_TIMESTAMP_BIT, &fence->flags);
 		trace_fence_signaled(fence);
+	}
 
 	list_for_each_entry_safe(cur, tmp, &fence->cb_list, node) {
 		list_del_init(&cur->node);
@@ -113,14 +111,11 @@ int fence_signal(struct fence *fence)
 	if (!fence)
 		return -EINVAL;
 
-	if (!ktime_to_ns(fence->timestamp)) {
-		fence->timestamp = ktime_get();
-		smp_mb__before_atomic();
-	}
-
 	if (test_and_set_bit(FENCE_FLAG_SIGNALED_BIT, &fence->flags))
 		return -EINVAL;
 
+	fence->timestamp = ktime_get();
+	set_bit(FENCE_FLAG_TIMESTAMP_BIT, &fence->flags);
 	trace_fence_signaled(fence);
 
 	if (test_bit(FENCE_FLAG_ENABLE_SIGNAL_BIT, &fence->flags)) {
@@ -214,6 +209,28 @@ void fence_enable_sw_signaling(struct fence *fence)
 	}
 }
 EXPORT_SYMBOL(fence_enable_sw_signaling);
+
+/**
+ * fence_enable_sw_signaling_nolock - enable signaling on fence without
+ * taking lock
+ * @fence:	[in]	the fence to enable
+ *
+ * WARNING this is only safe to use when you know you have the only reference
+ * to the fence there is no possibility for race conditions as a result of
+ * calling ops->enable_signaling() without lock.  Ie. it is probably only safe
+ * to use from the fence's construction function.
+ */
+void fence_enable_sw_signaling_nolock(struct fence *fence)
+{
+	if (!test_and_set_bit(FENCE_FLAG_ENABLE_SIGNAL_BIT, &fence->flags) &&
+	    !test_bit(FENCE_FLAG_SIGNALED_BIT, &fence->flags)) {
+		trace_fence_enable_signal(fence);
+
+		if (!fence->ops->enable_signaling(fence))
+			fence_signal(fence);
+	}
+}
+EXPORT_SYMBOL(fence_enable_sw_signaling_nolock);
 
 /**
  * fence_add_callback - add a callback to be called when the fence

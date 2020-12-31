@@ -20,6 +20,7 @@
 #include <linux/uaccess.h>
 #include <linux/cgroup.h>
 #include <trace/events/sched.h>
+#include <mt-plat/mtk_pidmap.h>
 
 static DEFINE_SPINLOCK(kthread_create_lock);
 static LIST_HEAD(kthread_create_list);

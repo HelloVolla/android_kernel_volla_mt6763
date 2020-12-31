@@ -1,0 +1,4 @@
+
+config MTK_STK3332_V2000
+	bool "stk3332 v2000 for MediaTek package"
+	default n

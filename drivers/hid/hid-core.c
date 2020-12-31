@@ -200,14 +200,13 @@ static unsigned hid_lookup_collection(struct hid_parser *parser, unsigned type)
  * Add a usage to the temporary parser table.
  */
 
-static int hid_add_usage(struct hid_parser *parser, unsigned usage, u8 size)
+static int hid_add_usage(struct hid_parser *parser, unsigned usage)
 {
 	if (parser->local.usage_index >= HID_MAX_USAGES) {
 		hid_err(parser->device, "usage index exceeded\n");
 		return -1;
 	}
 	parser->local.usage[parser->local.usage_index] = usage;
-	parser->local.usage_size[parser->local.usage_index] = size;
 	parser->local.collection_index[parser->local.usage_index] =
 		parser->collection_stack_ptr ?
 		parser->collection_stack[parser->collection_stack_ptr - 1] : 0;
@@ -464,7 +463,10 @@ static int hid_parser_local(struct hid_parser *parser, struct hid_item *item)
 			return 0;
 		}
 
-		return hid_add_usage(parser, data, item->size);
+		if (item->size <= 2)
+			data = (parser->global.usage_page << 16) + data;
+
+		return hid_add_usage(parser, data);
 
 	case HID_LOCAL_ITEM_TAG_USAGE_MINIMUM:
 
@@ -472,6 +474,9 @@ static int hid_parser_local(struct hid_parser *parser, struct hid_item *item)
 			dbg_hid("alternative usage ignored\n");
 			return 0;
 		}
+
+		if (item->size <= 2)
+			data = (parser->global.usage_page << 16) + data;
 
 		parser->local.usage_minimum = data;
 		return 0;
@@ -482,6 +487,9 @@ static int hid_parser_local(struct hid_parser *parser, struct hid_item *item)
 			dbg_hid("alternative usage ignored\n");
 			return 0;
 		}
+
+		if (item->size <= 2)
+			data = (parser->global.usage_page << 16) + data;
 
 		count = data - parser->local.usage_minimum;
 		if (count + parser->local.usage_index >= HID_MAX_USAGES) {
@@ -502,7 +510,7 @@ static int hid_parser_local(struct hid_parser *parser, struct hid_item *item)
 		}
 
 		for (n = parser->local.usage_minimum; n <= data; n++)
-			if (hid_add_usage(parser, n, item->size)) {
+			if (hid_add_usage(parser, n)) {
 				dbg_hid("hid_add_usage failed\n");
 				return -1;
 			}
@@ -517,22 +525,6 @@ static int hid_parser_local(struct hid_parser *parser, struct hid_item *item)
 }
 
 /*
- * Concatenate Usage Pages into Usages where relevant:
- * As per specification, 6.2.2.8: "When the parser encounters a main item it
- * concatenates the last declared Usage Page with a Usage to form a complete
- * usage value."
- */
-
-static void hid_concatenate_usage_page(struct hid_parser *parser)
-{
-	int i;
-
-	for (i = 0; i < parser->local.usage_index; i++)
-		if (parser->local.usage_size[i] <= 2)
-			parser->local.usage[i] += parser->global.usage_page << 16;
-}
-
-/*
  * Process a main item.
  */
 
@@ -540,8 +532,6 @@ static int hid_parser_main(struct hid_parser *parser, struct hid_item *item)
 {
 	__u32 data;
 	int ret;
-
-	hid_concatenate_usage_page(parser);
 
 	data = item_udata(item);
 
@@ -756,8 +746,6 @@ static int hid_scan_main(struct hid_parser *parser, struct hid_item *item)
 	__u32 data;
 	int i;
 
-	hid_concatenate_usage_page(parser);
-
 	data = item_udata(item);
 
 	switch (item->tag) {
@@ -846,6 +834,42 @@ static int hid_scan_report(struct hid_device *hid)
 				hid->group = HID_GROUP_RMI;
 		break;
 	}
+
+	/* fall back to generic driver in case specific driver doesn't exist */
+	switch (hid->group) {
+	case HID_GROUP_MULTITOUCH_WIN_8:
+		/* fall-through */
+	case HID_GROUP_MULTITOUCH:
+		if (!IS_ENABLED(CONFIG_HID_MULTITOUCH)) {
+			hid->group = HID_GROUP_GENERIC;
+			hid_warn(hid, "k4.14 change to %u\n", hid->group);
+		}
+		break;
+	case HID_GROUP_SENSOR_HUB:
+		if (!IS_ENABLED(CONFIG_HID_SENSOR_HUB))
+			hid->group = HID_GROUP_GENERIC;
+		break;
+	case HID_GROUP_RMI:
+		if (!IS_ENABLED(CONFIG_HID_RMI))
+			hid->group = HID_GROUP_GENERIC;
+		break;
+	case HID_GROUP_WACOM:
+		if (!IS_ENABLED(CONFIG_HID_WACOM))
+			hid->group = HID_GROUP_GENERIC;
+		break;
+	case HID_GROUP_LOGITECH_DJ_DEVICE:
+		if (!IS_ENABLED(CONFIG_HID_LOGITECH_DJ))
+			hid->group = HID_GROUP_GENERIC;
+		break;
+	}
+
+	if (hid->vendor == 0x248a && hid->group == HID_GROUP_MULTITOUCH) {
+		hid_warn(hid, "scan_report change to GENERIC %u\n", hid->group);
+		hid->group = HID_GROUP_GENERIC;
+	}
+
+	/* fall back to generic driver in case specific driver doesn't exist */
+	hid_warn(hid, "report vendor %u,group %u\n", hid->vendor, hid->group);
 
 	vfree(parser);
 	return 0;
@@ -2323,7 +2347,7 @@ __ATTRIBUTE_GROUPS(hid_dev);
 
 static int hid_uevent(struct device *dev, struct kobj_uevent_env *env)
 {
-	struct hid_device *hdev = to_hid_device(dev);	
+	struct hid_device *hdev = to_hid_device(dev);
 
 	if (add_uevent_var(env, "HID_ID=%04X:%08X:%08X",
 			hdev->bus, hdev->vendor, hdev->product))

@@ -413,8 +413,6 @@ rename:
 
 	dev->iommu_group = group;
 
-	iommu_group_create_direct_mappings(group, dev);
-
 	mutex_lock(&group->mutex);
 	list_add_tail(&device->list, &group->devices);
 	if (group->domain)
@@ -423,6 +421,7 @@ rename:
 	if (ret)
 		goto err_put_group;
 
+	iommu_group_create_direct_mappings(group, dev);
 	/* Notify any listeners about change to group. */
 	blocking_notifier_call_chain(&group->notifier,
 				     IOMMU_GROUP_NOTIFY_ADD_DEVICE, dev);
@@ -859,6 +858,7 @@ struct iommu_group *iommu_group_get_for_dev(struct device *dev)
 
 	return group;
 }
+EXPORT_SYMBOL_GPL(iommu_group_get_for_dev);
 
 struct iommu_domain *iommu_group_default_domain(struct iommu_group *group)
 {
@@ -1310,6 +1310,10 @@ static size_t iommu_pgsize(struct iommu_domain *domain,
 	return pgsize;
 }
 
+#ifdef CONFIG_MTK_IOMMU_V2
+#include "mtk_iommu_ext.h"
+#endif
+
 int iommu_map(struct iommu_domain *domain, unsigned long iova,
 	      phys_addr_t paddr, size_t size, int prot)
 {
@@ -1363,6 +1367,10 @@ int iommu_map(struct iommu_domain *domain, unsigned long iova,
 	else
 		trace_map(orig_iova, orig_paddr, orig_size);
 
+#ifdef CONFIG_MTK_IOMMU_V2
+	if (ret == 0)
+		mtk_iommu_trace_map(orig_iova, orig_paddr, orig_size);
+#endif
 	return ret;
 }
 EXPORT_SYMBOL_GPL(iommu_map);
@@ -1415,6 +1423,11 @@ size_t iommu_unmap(struct iommu_domain *domain, unsigned long iova, size_t size)
 	}
 
 	trace_unmap(orig_iova, size, unmapped);
+
+#ifdef CONFIG_MTK_IOMMU_V2
+	mtk_iommu_trace_unmap(orig_iova, size, unmapped);
+#endif
+
 	return unmapped;
 }
 EXPORT_SYMBOL_GPL(iommu_unmap);
@@ -1433,7 +1446,12 @@ size_t default_iommu_map_sg(struct iommu_domain *domain, unsigned long iova,
 	min_pagesz = 1 << __ffs(domain->pgsize_bitmap);
 
 	for_each_sg(sg, s, nents, i) {
-		phys_addr_t phys = page_to_phys(sg_page(s)) + s->offset;
+		phys_addr_t phys;
+
+		if (sg_page(s))
+			phys = page_to_phys(sg_page(s)) + s->offset;
+		else
+			phys = sg_dma_address(s);
 
 		/*
 		 * We are mapping on IOMMU page boundaries, so offset within

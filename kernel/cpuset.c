@@ -173,6 +173,9 @@ typedef enum {
 	CS_SCHED_LOAD_BALANCE,
 	CS_SPREAD_PAGE,
 	CS_SPREAD_SLAB,
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+	CS_USER_SPACE_GLOBAL_CPUSET,
+#endif
 } cpuset_flagbits_t;
 
 /* convenient tests for these bits */
@@ -215,11 +218,26 @@ static inline int is_spread_slab(const struct cpuset *cs)
 {
 	return test_bit(CS_SPREAD_SLAB, &cs->flags);
 }
-
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+static inline int is_user_space_global_cpuset(const struct cpuset *cs)
+{
+	return test_bit(CS_USER_SPACE_GLOBAL_CPUSET, &cs->flags);
+}
+#endif
 static struct cpuset top_cpuset = {
 	.flags = ((1 << CS_ONLINE) | (1 << CS_CPU_EXCLUSIVE) |
 		  (1 << CS_MEM_EXCLUSIVE)),
 };
+
+static bool cpuset_v2_behavior(void)
+{
+	return true;
+}
+
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+bool global_cpuset_flag;
+struct cpumask global_cpus_set;
+#endif
 
 /**
  * cpuset_for_each_child - traverse online children of a cpuset
@@ -488,7 +506,7 @@ static int validate_change(struct cpuset *cur, struct cpuset *trial)
 
 	/* On legacy hiearchy, we must be a subset of our parent cpuset. */
 	ret = -EACCES;
-	if (!cgroup_subsys_on_dfl(cpuset_cgrp_subsys) &&
+	if (!cpuset_v2_behavior() &&
 	    !is_cpuset_subset(trial, par))
 		goto out;
 
@@ -848,6 +866,22 @@ void rebuild_sched_domains(void)
 	mutex_unlock(&cpuset_mutex);
 }
 
+void rebuild_sched_domains_narrow_locked(void)
+{
+	struct sched_domain_attr *attr;
+	cpumask_var_t *doms;
+	int ndoms;
+
+	if (!cpumask_equal(top_cpuset.effective_cpus, cpu_active_mask))
+		return;
+
+	/* Generate domain masks and attrs */
+	ndoms = generate_sched_domains(&doms, &attr);
+
+	/* Have scheduler rebuild the domains */
+	partition_sched_domains(ndoms, doms, attr);
+}
+
 /**
  * update_tasks_cpumask - Update the cpumasks of tasks in the cpuset.
  * @cs: the cpuset in which each task's cpus_allowed mask needs to be changed
@@ -895,7 +929,7 @@ static void update_cpumasks_hier(struct cpuset *cs, struct cpumask *new_cpus)
 		 * If it becomes empty, inherit the effective mask of the
 		 * parent, which is guaranteed to have some CPUs.
 		 */
-		if (cgroup_subsys_on_dfl(cpuset_cgrp_subsys) &&
+		if (cpuset_v2_behavior() &&
 		    cpumask_empty(new_cpus))
 			cpumask_copy(new_cpus, parent->effective_cpus);
 
@@ -913,7 +947,7 @@ static void update_cpumasks_hier(struct cpuset *cs, struct cpumask *new_cpus)
 		cpumask_copy(cp->effective_cpus, new_cpus);
 		spin_unlock_irq(&callback_lock);
 
-		WARN_ON(!cgroup_subsys_on_dfl(cpuset_cgrp_subsys) &&
+		WARN_ON(!cpuset_v2_behavior() &&
 			!cpumask_equal(cp->cpus_allowed, cp->effective_cpus));
 
 		update_tasks_cpumask(cp);
@@ -945,9 +979,17 @@ static int update_cpumask(struct cpuset *cs, struct cpuset *trialcs,
 			  const char *buf)
 {
 	int retval;
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+	struct cpumask *set_global = &global_cpus_set;
 
+	/* If we want set global cpuset, set it to root cpuset */
+	if (cs == &top_cpuset &&
+	    !is_user_space_global_cpuset(cs) &&
+	    !global_cpuset_flag)
+#else
 	/* top_cpuset.cpus_allowed tracks cpu_online_mask; it's read-only */
 	if (cs == &top_cpuset)
+#endif
 		return -EACCES;
 
 	/*
@@ -973,9 +1015,60 @@ static int update_cpumask(struct cpuset *cs, struct cpuset *trialcs,
 	if (cpumask_equal(cs->cpus_requested, trialcs->cpus_requested))
 		return 0;
 
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+	/* Set global cpuset */
+	if (global_cpuset_flag && cs == &top_cpuset) {
+		spin_lock_irq(&callback_lock);
+		cpumask_copy(&global_cpus_set, trialcs->cpus_requested);
+		spin_unlock_irq(&callback_lock);
+
+		printk_deferred("[name:global_cpuset&]global set:");
+		printk_deferred("new=0x%lx, orig=0x%lx\n",
+				global_cpus_set.bits[0],
+				cs->cpus_requested->bits[0]);
+
+		set_user_space_global_cpuset(&global_cpus_set, 0);
+		return 0;
+	}
+#endif
+
 	retval = validate_change(cs, trialcs);
 	if (retval < 0)
 		return retval;
+
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+	/* If set global_cpuset_flag, should consinder global
+	 * cpuset when use original flow update child cs
+	 */
+	if (global_cpuset_flag && set_global) {
+		cpumask_and(trialcs->cpus_allowed,
+			    trialcs->cpus_requested, &global_cpus_set);
+
+		printk_deferred("[name:global_cpuset&]original set:");
+		printk_deferred("global=0x%lx, orig=0x%lx, new=0x%lx\n",
+				global_cpus_set.bits[0],
+				cs->cpus_requested->bits[0],
+				trialcs->cpus_allowed->bits[0]);
+
+		if (cpuset_v2_behavior() &&
+			cpumask_empty(trialcs->cpus_allowed)) {
+			printk_deferred("[name:global_cpuset&]");
+			printk_deferred("original set empty:");
+			printk_deferred("global=0x%lx, orig=0x%lx\n",
+					global_cpus_set.bits[0],
+					cs->cpus_requested->bits[0]);
+
+			/* If global and cs no intersects,
+			 * use original cs requested
+			 */
+			spin_lock_irq(&callback_lock);
+			cpumask_copy(trialcs->cpus_allowed, cs->cpus_requested);
+			cpumask_copy(trialcs->cpus_requested,
+				     cs->cpus_requested);
+			spin_unlock_irq(&callback_lock);
+		}
+	}
+#endif
 
 	spin_lock_irq(&callback_lock);
 	cpumask_copy(cs->cpus_allowed, trialcs->cpus_allowed);
@@ -1166,7 +1259,7 @@ static void update_nodemasks_hier(struct cpuset *cs, nodemask_t *new_mems)
 		 * If it becomes empty, inherit the effective mask of the
 		 * parent, which is guaranteed to have some MEMs.
 		 */
-		if (cgroup_subsys_on_dfl(cpuset_cgrp_subsys) &&
+		if (cpuset_v2_behavior() &&
 		    nodes_empty(*new_mems))
 			*new_mems = parent->effective_mems;
 
@@ -1184,7 +1277,7 @@ static void update_nodemasks_hier(struct cpuset *cs, nodemask_t *new_mems)
 		cp->effective_mems = *new_mems;
 		spin_unlock_irq(&callback_lock);
 
-		WARN_ON(!cgroup_subsys_on_dfl(cpuset_cgrp_subsys) &&
+		WARN_ON(!cpuset_v2_behavior() &&
 			!nodes_equal(cp->mems_allowed, cp->effective_mems));
 
 		update_tasks_nodemask(cp);
@@ -1328,11 +1421,23 @@ static int update_flag(cpuset_flagbits_t bit, struct cpuset *cs,
 	if (!trialcs)
 		return -ENOMEM;
 
-	if (turning_on)
+	if (turning_on) {
 		set_bit(bit, &trialcs->flags);
-	else
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+		if (bit == CS_USER_SPACE_GLOBAL_CPUSET &&
+		    cs == &top_cpuset && !global_cpuset_flag)
+			global_cpuset_flag = true;
+#endif
+	} else {
 		clear_bit(bit, &trialcs->flags);
-
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+		if (bit == CS_USER_SPACE_GLOBAL_CPUSET &&
+		    cs == &top_cpuset && global_cpuset_flag) {
+			global_cpuset_flag = false;
+			unset_user_space_global_cpuset(0);
+		}
+#endif
+	}
 	err = validate_change(cs, trialcs);
 	if (err < 0)
 		goto out;
@@ -1476,7 +1581,7 @@ static int cpuset_can_attach(struct cgroup_taskset *tset)
 
 	/* allow moving tasks into an empty cpuset if on default hierarchy */
 	ret = -ENOSPC;
-	if (!cgroup_subsys_on_dfl(cpuset_cgrp_subsys) &&
+	if (!cpuset_v2_behavior() &&
 	    (cpumask_empty(cs->cpus_allowed) || nodes_empty(cs->mems_allowed)))
 		goto out_unlock;
 
@@ -1607,6 +1712,9 @@ typedef enum {
 	FILE_MEMORY_PRESSURE,
 	FILE_SPREAD_PAGE,
 	FILE_SPREAD_SLAB,
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+	FILE_USER_SPACE_GLOBAL_CPUSET,
+#endif
 } cpuset_filetype_t;
 
 static int cpuset_write_u64(struct cgroup_subsys_state *css, struct cftype *cft,
@@ -1647,6 +1755,11 @@ static int cpuset_write_u64(struct cgroup_subsys_state *css, struct cftype *cft,
 	case FILE_SPREAD_SLAB:
 		retval = update_flag(CS_SPREAD_SLAB, cs, val);
 		break;
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+	case FILE_USER_SPACE_GLOBAL_CPUSET:
+		retval = update_flag(CS_USER_SPACE_GLOBAL_CPUSET, cs, val);
+		break;
+#endif
 	default:
 		retval = -EINVAL;
 		break;
@@ -1806,6 +1919,10 @@ static u64 cpuset_read_u64(struct cgroup_subsys_state *css, struct cftype *cft)
 		return is_spread_page(cs);
 	case FILE_SPREAD_SLAB:
 		return is_spread_slab(cs);
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+	case FILE_USER_SPACE_GLOBAL_CPUSET:
+		return is_user_space_global_cpuset(cs);
+#endif
 	default:
 		BUG();
 	}
@@ -1932,7 +2049,14 @@ static struct cftype files[] = {
 		.write_u64 = cpuset_write_u64,
 		.private = FILE_MEMORY_PRESSURE_ENABLED,
 	},
-
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+	{
+		.name = "user_space_global_cpuset",
+		.read_u64 = cpuset_read_u64,
+		.write_u64 = cpuset_write_u64,
+		.private = FILE_USER_SPACE_GLOBAL_CPUSET,
+	},
+#endif
 	{ }	/* terminate */
 };
 
@@ -2000,7 +2124,7 @@ static int cpuset_css_online(struct cgroup_subsys_state *css)
 	cpuset_inc();
 
 	spin_lock_irq(&callback_lock);
-	if (cgroup_subsys_on_dfl(cpuset_cgrp_subsys)) {
+	if (cpuset_v2_behavior()) {
 		cpumask_copy(cs->effective_cpus, parent->effective_cpus);
 		cs->effective_mems = parent->effective_mems;
 	}
@@ -2079,7 +2203,7 @@ static void cpuset_bind(struct cgroup_subsys_state *root_css)
 	mutex_lock(&cpuset_mutex);
 	spin_lock_irq(&callback_lock);
 
-	if (cgroup_subsys_on_dfl(cpuset_cgrp_subsys)) {
+	if (cpuset_v2_behavior()) {
 		cpumask_copy(top_cpuset.cpus_allowed, cpu_possible_mask);
 		top_cpuset.mems_allowed = node_possible_map;
 	} else {
@@ -2279,7 +2403,7 @@ retry:
 	cpus_updated = !cpumask_equal(&new_cpus, cs->effective_cpus);
 	mems_updated = !nodes_equal(new_mems, cs->effective_mems);
 
-	if (cgroup_subsys_on_dfl(cpuset_cgrp_subsys))
+	if (cpuset_v2_behavior())
 		hotplug_update_tasks(cs, &new_cpus, &new_mems,
 				     cpus_updated, mems_updated);
 	else
@@ -2317,8 +2441,9 @@ static void cpuset_hotplug_workfn(struct work_struct *work)
 	static cpumask_t new_cpus;
 	static nodemask_t new_mems;
 	bool cpus_updated, mems_updated;
-	bool on_dfl = cgroup_subsys_on_dfl(cpuset_cgrp_subsys);
+	bool on_dfl = cpuset_v2_behavior();
 
+	get_online_cpus();
 	mutex_lock(&cpuset_mutex);
 
 	/* fetch the available cpus/mems and find out which changed how */
@@ -2369,11 +2494,15 @@ static void cpuset_hotplug_workfn(struct work_struct *work)
 		rcu_read_unlock();
 	}
 
+	mutex_lock(&cpuset_mutex);
 	/* rebuild sched domains if cpus_allowed has changed */
 	if (cpus_updated || force_rebuild) {
 		force_rebuild = false;
-		rebuild_sched_domains();
+		rebuild_sched_domains_narrow_locked();
 	}
+
+	mutex_unlock(&cpuset_mutex);
+	put_online_cpus();
 }
 
 void cpuset_update_active_cpus(bool cpu_online)
@@ -2391,6 +2520,175 @@ void cpuset_update_active_cpus(bool cpu_online)
 	partition_sched_domains(1, NULL, NULL);
 	schedule_work(&cpuset_hotplug_work);
 }
+
+#ifdef CONFIG_MTK_USER_SPACE_GLOBAL_CPUSET
+/*
+ * mtk: set user space global cpuset when need core ceiling
+ * Only change user space mask.
+ * If global cpuset and original cs request no intersects,
+ * use original cs request.
+ * cgroup_id: if 0, set all child groups.
+ */
+void set_user_space_global_cpuset(struct cpumask *global_cpus, int cgroup_id)
+{
+	bool need_rebuild_sched_domains = false;
+	struct cpuset *cs;
+	struct cgroup_subsys_state *pos_css;
+
+	rcu_read_lock();
+	cpuset_for_each_descendant_pre(cs, pos_css, &top_cpuset) {
+		struct cpumask *final_set_cpus = cs->cpus_allowed;
+		struct cpuset *parent;
+
+		if (cs == &top_cpuset || !css_tryget_online(&cs->css) ||
+			(cgroup_id != 0 && cs->css.cgroup->id != cgroup_id))
+			continue;
+
+		parent = parent_cs(cs);
+
+		cpumask_and(final_set_cpus, cs->cpus_requested, global_cpus);
+
+		if (cpuset_v2_behavior() &&
+			cpumask_empty(final_set_cpus)) {
+			printk_deferred("[name:global_cpuset&]");
+			printk_deferred("global set empty:");
+			printk_deferred("global=0x%lx, orig=0x%lx\n",
+					global_cpus->bits[0],
+					cs->cpus_requested->bits[0]);
+
+			/* if cpumask no intersects, use original cs request */
+			cpumask_copy(final_set_cpus, cs->cpus_requested);
+		}
+
+		/* Skip the whole subtree if the cpumask remains the same. */
+		if (cpumask_equal(final_set_cpus, cs->effective_cpus)) {
+			pos_css = css_rightmost_descendant(pos_css);
+			continue;
+		}
+
+		if (!css_tryget_online(&cs->css))
+			continue;
+		rcu_read_unlock();
+
+		spin_lock_irq(&callback_lock);
+		cpumask_copy(cs->effective_cpus, final_set_cpus);
+		spin_unlock_irq(&callback_lock);
+
+		WARN_ON(!cpuset_v2_behavior() &&
+			!cpumask_equal(cs->cpus_allowed, cs->effective_cpus));
+
+		printk_deferred("[name:global_cpuset&]final set:0x%lx cgroup:",
+				cs->effective_cpus->bits[0]);
+		printk_deferred("%s, id:%d\n",
+				cs->css.cgroup->kn->name,
+				cs->css.cgroup->id);
+
+		/* use cs->effective_cpus to update cs cpumask */
+		update_tasks_cpumask(cs);
+
+		/*
+		 * If the effective cpumask of any non-empty cpuset is changed,
+		 * we need to rebuild sched domains.
+		 */
+		if (!cpumask_empty(cs->cpus_allowed) &&
+			is_sched_load_balance(cs))
+			need_rebuild_sched_domains = true;
+
+		rcu_read_lock();
+		css_put(&cs->css);
+	}
+	rcu_read_unlock();
+
+	/* rebuild sched domains if cpus_allowed has changed */
+	if (need_rebuild_sched_domains)
+		rebuild_sched_domains_locked();
+}
+
+/*
+ * mtk: unset user space global cpuset
+ * When no need global cpuset, restore original cpu request.
+ * If original cs request is empty, use parent effective_cpus.
+ * cgroup_id: if 0, unset all child groups.
+ */
+void unset_user_space_global_cpuset(int cgroup_id)
+{
+	bool need_rebuild_sched_domains = false;
+	struct cpuset *cs;
+	struct cgroup_subsys_state *pos_css;
+
+	/* reset global_cpus_set */
+	cpumask_copy(&global_cpus_set, top_cpuset.effective_cpus);
+
+	printk_deferred("[name:global_cpuset&]unset: ");
+	printk_deferred("restore_root_cpuset=0x%lx\n",
+			global_cpus_set.bits[0]);
+
+	rcu_read_lock();
+	cpuset_for_each_descendant_pre(cs, pos_css, &top_cpuset) {
+		struct cpumask restore_cpus;
+		struct cpuset *parent;
+
+		if (cs == &top_cpuset || !css_tryget_online(&cs->css) ||
+			(cgroup_id != 0 && cs->css.cgroup->id != cgroup_id))
+			continue;
+
+		parent = parent_cs(cs);
+
+		/* restore_cpus should follow top_cpuset.effective_cpus */
+		cpumask_and(&restore_cpus, cs->cpus_requested,
+			    &global_cpus_set);
+
+		if (cpuset_v2_behavior() &&
+			cpumask_empty(&restore_cpus))
+			cpumask_copy(&restore_cpus, parent->effective_cpus);
+
+		/* Skip the whole subtree if the cpumask remains the same. */
+		if (cpumask_equal(&restore_cpus, cs->effective_cpus)) {
+			pos_css = css_rightmost_descendant(pos_css);
+			continue;
+		}
+
+		if (!css_tryget_online(&cs->css))
+			continue;
+		rcu_read_unlock();
+
+		spin_lock_irq(&callback_lock);
+		cpumask_copy(cs->effective_cpus, &restore_cpus);
+		spin_unlock_irq(&callback_lock);
+
+		WARN_ON(!cpuset_v2_behavior() &&
+			!cpumask_equal(cs->cpus_allowed, cs->effective_cpus));
+
+		printk_deferred("[name:global_cpuset&]final unset:");
+		printk_deferred("0x%lx cgroup:%s, id:%d\n",
+				cs->effective_cpus->bits[0],
+				cs->css.cgroup->kn->name,
+				cs->css.cgroup->id);
+		pr_cont_cgroup_name(cs->css.cgroup);
+		printk_deferred("\n");
+
+		/* use cs->effective_cpus to update cs cpumask */
+		update_tasks_cpumask(cs);
+
+		/*
+		 * If the effective cpumask of any non-empty cpuset is changed,
+		 * we need to rebuild sched domains.
+		 */
+		if (!cpumask_empty(cs->cpus_allowed) &&
+			is_sched_load_balance(cs))
+			need_rebuild_sched_domains = true;
+
+		rcu_read_lock();
+		css_put(&cs->css);
+	}
+	rcu_read_unlock();
+
+	/* rebuild sched domains if cpus_allowed has changed */
+	if (need_rebuild_sched_domains)
+		rebuild_sched_domains_locked();
+}
+
+#endif
 
 void cpuset_wait_for_hotplug(void)
 {
@@ -2459,7 +2757,15 @@ void cpuset_cpus_allowed(struct task_struct *tsk, struct cpumask *pmask)
 void cpuset_cpus_allowed_fallback(struct task_struct *tsk)
 {
 	rcu_read_lock();
-	do_set_cpus_allowed(tsk, task_cs(tsk)->effective_cpus);
+	/*
+	 * mtk: if task affinity of root group not intersects with online cpu,
+	 * set task affinity of root group to all cores.
+	 */
+	if (task_cs(tsk) == &top_cpuset)
+		do_set_cpus_allowed(tsk, task_cs(tsk)->cpus_requested);
+	else
+		do_set_cpus_allowed(tsk, task_cs(tsk)->effective_cpus);
+
 	rcu_read_unlock();
 
 	/*

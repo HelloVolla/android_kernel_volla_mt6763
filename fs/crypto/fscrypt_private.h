@@ -16,6 +16,9 @@
 #include <crypto/hash.h>
 
 /* Encryption parameters */
+
+#define FS_IV_SIZE			16
+#define FS_AES_256_XTS_KEY_SIZE                64
 #define FS_KEY_DERIVATION_NONCE_SIZE	16
 
 /**
@@ -79,6 +82,9 @@ struct fscrypt_info {
 	 * Otherwise, this inode uses a derived key.
 	 */
 	struct fscrypt_master_key *ci_master_key;
+	
+	/* The Key is required by HIE driver */
+	struct key	*ci_keyring_key;
 
 	/* fields from the fscrypt_context */
 	u8 ci_data_mode;
@@ -109,6 +115,10 @@ static inline bool fscrypt_valid_enc_modes(u32 contents_mode,
 
 	if (contents_mode == FS_ENCRYPTION_MODE_ADIANTUM &&
 	    filenames_mode == FS_ENCRYPTION_MODE_ADIANTUM)
+		return true;
+
+	if (contents_mode == FS_ENCRYPTION_MODE_PRIVATE &&
+	    filenames_mode == FS_ENCRYPTION_MODE_AES_256_CTS)
 		return true;
 
 	return false;
@@ -170,5 +180,8 @@ struct fscrypt_mode {
 };
 
 extern void __exit fscrypt_essiv_cleanup(void);
+
+/* policy.c */
+extern u8 fscrypt_data_crypt_mode(u8 mode);
 
 #endif /* _FSCRYPT_PRIVATE_H */

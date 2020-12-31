@@ -252,6 +252,12 @@ static int regulator_check_consumers(struct regulator_dev *rdev,
 		if (!regulator->min_uV && !regulator->max_uV)
 			continue;
 
+		//prize-modify-zhuzhengjiang-20200604-start
+		if(strstr(regulator->supply_name,"vcamd"))
+		{
+			continue;
+		}
+		//prize-modify-zhuzhengjiang-20200604-end
 		if (*max_uV > regulator->max_uV)
 			*max_uV = regulator->max_uV;
 		if (*min_uV < regulator->min_uV)

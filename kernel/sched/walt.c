@@ -212,7 +212,10 @@ update_window_start(struct rq *rq, u64 wallclock)
 	/* If the MPM global timer is cleared, set delta as 0 to avoid kernel BUG happening */
 	if (delta < 0) {
 		delta = 0;
-		WARN_ONCE(1, "WALT wallclock appears to have gone backwards or reset\n");
+		/*
+		 * WARN_ONCE(1,
+		 * "WALT wallclock appears to have gone backwards or reset\n");
+		 */
 	}
 
 	if (delta < walt_ravg_window)
@@ -824,6 +827,7 @@ void walt_fixup_busy_time(struct task_struct *p, int new_cpu)
 	struct rq *src_rq = task_rq(p);
 	struct rq *dest_rq = cpu_rq(new_cpu);
 	u64 wallclock;
+	int lock_needed = 0;
 
 	if (!p->on_rq && p->state != TASK_WAKING)
 		return;
@@ -833,6 +837,9 @@ void walt_fixup_busy_time(struct task_struct *p, int new_cpu)
 	}
 
 	if (p->state == TASK_WAKING)
+		lock_needed = 1;
+
+	if (lock_needed)
 		double_rq_lock(src_rq, dest_rq);
 
 	wallclock = walt_ktime_clock();
@@ -867,17 +874,17 @@ void walt_fixup_busy_time(struct task_struct *p, int new_cpu)
 
 	if ((s64)src_rq->prev_runnable_sum < 0) {
 		src_rq->prev_runnable_sum = 0;
-		WARN_ON(1);
+		/* WARN_ON(1); */
 	}
 	if ((s64)src_rq->curr_runnable_sum < 0) {
 		src_rq->curr_runnable_sum = 0;
-		WARN_ON(1);
+		/* WARN_ON(1); */
 	}
 
 	trace_walt_migration_update_sum(src_rq, p);
 	trace_walt_migration_update_sum(dest_rq, p);
 
-	if (p->state == TASK_WAKING)
+	if (lock_needed)
 		double_rq_unlock(src_rq, dest_rq);
 }
 

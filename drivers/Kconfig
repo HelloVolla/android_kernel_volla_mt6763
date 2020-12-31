@@ -76,6 +76,8 @@ source "drivers/hwmon/Kconfig"
 
 source "drivers/thermal/Kconfig"
 
+source "drivers/trusty/Kconfig"
+
 source "drivers/watchdog/Kconfig"
 
 source "drivers/ssb/Kconfig"
@@ -203,5 +205,9 @@ source "drivers/hwtracing/intel_th/Kconfig"
 source "drivers/fpga/Kconfig"
 
 source "drivers/tee/Kconfig"
-
+# prize-wyq 20190505, for project config-start
+config PROJECT_KOOBEE
+	string "PROJECT KOOBEE"
+	default ""
+# prize-wyq 20190505, for project config-end
 endmenu

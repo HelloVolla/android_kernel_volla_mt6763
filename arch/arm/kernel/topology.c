@@ -21,6 +21,7 @@
 #include <linux/of.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
+#include <linux/sched_energy.h>
 
 #include <asm/cputype.h>
 #include <asm/topology.h>
@@ -42,6 +43,8 @@
  */
 static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
 
+#include "topology_dts.c"
+
 unsigned long scale_cpu_capacity(struct sched_domain *sd, int cpu)
 {
 	return per_cpu(cpu_scale, cpu);
@@ -53,108 +56,6 @@ static void set_capacity_scale(unsigned int cpu, unsigned long capacity)
 }
 
 #ifdef CONFIG_OF
-struct cpu_efficiency {
-	const char *compatible;
-	unsigned long efficiency;
-};
-
-/*
- * Table of relative efficiency of each processors
- * The efficiency value must fit in 20bit and the final
- * cpu_scale value must be in the range
- *   0 < cpu_scale < 3*SCHED_CAPACITY_SCALE/2
- * in order to return at most 1 when DIV_ROUND_CLOSEST
- * is used to compute the capacity of a CPU.
- * Processors that are not defined in the table,
- * use the default SCHED_CAPACITY_SCALE value for cpu_scale.
- */
-static const struct cpu_efficiency table_efficiency[] = {
-	{"arm,cortex-a15", 3891},
-	{"arm,cortex-a7",  2048},
-	{NULL, },
-};
-
-static unsigned long *__cpu_capacity;
-#define cpu_capacity(cpu)	__cpu_capacity[cpu]
-
-static unsigned long middle_capacity = 1;
-
-/*
- * Iterate all CPUs' descriptor in DT and compute the efficiency
- * (as per table_efficiency). Also calculate a middle efficiency
- * as close as possible to  (max{eff_i} - min{eff_i}) / 2
- * This is later used to scale the cpu_capacity field such that an
- * 'average' CPU is of middle capacity. Also see the comments near
- * table_efficiency[] and update_cpu_capacity().
- */
-static void __init parse_dt_topology(void)
-{
-	const struct cpu_efficiency *cpu_eff;
-	struct device_node *cn = NULL;
-	unsigned long min_capacity = ULONG_MAX;
-	unsigned long max_capacity = 0;
-	unsigned long capacity = 0;
-	int cpu = 0;
-
-	__cpu_capacity = kcalloc(nr_cpu_ids, sizeof(*__cpu_capacity),
-				 GFP_NOWAIT);
-
-	for_each_possible_cpu(cpu) {
-		const u32 *rate;
-		int len;
-
-		/* too early to use cpu->of_node */
-		cn = of_get_cpu_node(cpu, NULL);
-		if (!cn) {
-			pr_err("missing device node for CPU %d\n", cpu);
-			continue;
-		}
-
-		for (cpu_eff = table_efficiency; cpu_eff->compatible; cpu_eff++)
-			if (of_device_is_compatible(cn, cpu_eff->compatible))
-				break;
-
-		if (cpu_eff->compatible == NULL)
-			continue;
-
-		rate = of_get_property(cn, "clock-frequency", &len);
-		if (!rate || len != 4) {
-			pr_err("%s missing clock-frequency property\n",
-				cn->full_name);
-			continue;
-		}
-
-		capacity = ((be32_to_cpup(rate)) >> 20) * cpu_eff->efficiency;
-
-		/* Save min capacity of the system */
-		if (capacity < min_capacity)
-			min_capacity = capacity;
-
-		/* Save max capacity of the system */
-		if (capacity > max_capacity)
-			max_capacity = capacity;
-
-		cpu_capacity(cpu) = capacity;
-	}
-
-	/* If min and max capacities are equals, we bypass the update of the
-	 * cpu_scale because all CPUs have the same capacity. Otherwise, we
-	 * compute a middle_capacity factor that will ensure that the capacity
-	 * of an 'average' CPU of the system will be as close as possible to
-	 * SCHED_CAPACITY_SCALE, which is the default value, but with the
-	 * constraint explained near table_efficiency[].
-	 */
-	if (4*max_capacity < (3*(max_capacity + min_capacity)))
-		middle_capacity = (min_capacity + max_capacity)
-				>> (SCHED_CAPACITY_SHIFT+1);
-	else
-		middle_capacity = ((max_capacity / 3)
-				>> (SCHED_CAPACITY_SHIFT-1)) + 1;
-
-}
-
-static const struct sched_group_energy * const cpu_core_energy(int cpu);
-
 /*
  * Look for a customed capacity of a CPU in the cpu_capacity table during the
  * boot. The update of all CPUs is in O(n^2) for heteregeneous system but the
@@ -162,12 +63,21 @@ static const struct sched_group_energy * const cpu_core_energy(int cpu);
  */
 static void update_cpu_capacity(unsigned int cpu)
 {
-	unsigned long capacity = SCHED_CAPACITY_SCALE;
-
+	u64 capacity = cpu_capacity(cpu);
+#ifndef CONFIG_MACH_MT6757
 	if (cpu_core_energy(cpu)) {
 		int max_cap_idx = cpu_core_energy(cpu)->nr_cap_states - 1;
 		capacity = cpu_core_energy(cpu)->cap_states[max_cap_idx].cap;
 	}
+#else
+	if (!capacity || !max_cpu_perf) {
+		cpu_capacity(cpu) = 0;
+		return;
+	}
+
+	capacity *= SCHED_CAPACITY_SCALE;
+	capacity = div64_u64(capacity, max_cpu_perf);
+#endif
 
 	set_capacity_scale(cpu, capacity);
 
@@ -287,6 +197,7 @@ void store_cpu_topology(unsigned int cpuid)
  * normalization must be consistent. That is, one bogo-joule/watt must be the
  * same quantity for all data, but we don't care what it is.
  */
+#ifndef CONFIG_MTK_UNIFY_POWER
 static struct idle_state idle_states_cluster_a7[] = {
 	 { .power = 25 }, /* arch_cpu_idle() (active idle) = WFI */
 	 { .power = 25 }, /* WFI */
@@ -386,20 +297,63 @@ static struct sched_group_energy energy_core_a15 = {
 	  .nr_cap_states  = ARRAY_SIZE(cap_states_core_a15),
 	  .cap_states     = cap_states_core_a15,
 };
+#endif
 
 /* sd energy functions */
-static inline
+inline
 const struct sched_group_energy * const cpu_cluster_energy(int cpu)
 {
+#ifndef CONFIG_MTK_UNIFY_POWER
 	return cpu_topology[cpu].socket_id ? &energy_cluster_a7 :
 			&energy_cluster_a15;
+#else
+	struct sched_group_energy *sge = sge_array[cpu][SD_LEVEL1];
+	int cluster_id = cpu_topology[cpu].socket_id;
+	struct upower_tbl_info **addr_ptr_tbl_info;
+	struct upower_tbl_info *ptr_tbl_info;
+	struct upower_tbl *ptr_tbl;
+
+	if (!sge) {
+		pr_warn("Invalid sched_group_energy for Cluster%d\n", cpu);
+		return NULL;
+	}
+
+	addr_ptr_tbl_info = upower_get_tbl();
+	ptr_tbl_info = *addr_ptr_tbl_info;
+
+	ptr_tbl = ptr_tbl_info[UPOWER_BANK_CLS_BASE+cluster_id].p_upower_tbl;
+
+	sge->nr_cap_states = ptr_tbl->row_num;
+	sge->cap_states = ptr_tbl->row;
+	sge->lkg_idx = ptr_tbl->lkg_idx;
+
+	return sge;
+#endif
 }
 
-static inline
+inline
 const struct sched_group_energy * const cpu_core_energy(int cpu)
 {
+#ifndef CONFIG_MTK_UNIFY_POWER
 	return cpu_topology[cpu].socket_id ? &energy_core_a7 :
 			&energy_core_a15;
+#else
+	struct sched_group_energy *sge = sge_array[cpu][SD_LEVEL0];
+	struct upower_tbl *ptr_tbl;
+
+	if (!sge) {
+		pr_warn("Invalid sched_group_energy for CPU%d\n", cpu);
+		return NULL;
+	}
+
+	ptr_tbl = upower_get_core_tbl(cpu);
+
+	sge->nr_cap_states = ptr_tbl->row_num;
+	sge->cap_states = ptr_tbl->row;
+	sge->lkg_idx = ptr_tbl->lkg_idx;
+
+	return sge;
+#endif
 }
 
 static inline int cpu_corepower_flags(void)
@@ -424,6 +378,9 @@ void __init init_cpu_topology(void)
 {
 	unsigned int cpu;
 
+	if (cpu_topology_init)
+		return;
+
 	/* init core mask and capacity */
 	for_each_possible_cpu(cpu) {
 		struct cputopo_arm *cpu_topo = &(cpu_topology[cpu]);
@@ -440,4 +397,22 @@ void __init init_cpu_topology(void)
 
 	/* Set scheduler topology descriptor */
 	set_sched_topology(arm_topology);
+	parse_dt_cpu_capacity();
+
+	init_sched_energy_costs();
 }
+
+#ifdef CONFIG_MTK_UNIFY_POWER
+	static int
+cpu_capacity_sync(void)
+{
+	int cpu;
+
+	for_each_possible_cpu(cpu)
+		update_cpu_capacity(cpu);
+
+	return 0;
+}
+
+late_initcall_sync(cpu_capacity_sync)
+#endif

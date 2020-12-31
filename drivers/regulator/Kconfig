@@ -339,6 +339,16 @@ config REGULATOR_LP8755
 	  chip contains six step-down DC/DC converters which can support
 	  9 mode multiphase configuration.
 
+config REGULATOR_LP8756
+	tristate "TI LP8756 High Performance PMU driver"
+	depends on I2C
+	select REGMAP_I2C
+	help
+	  This driver supports LP8756 High Performance PMU driver. This
+	  chip contains four step-down DC/DC converters which can support
+	  4 mode multiphase configuration. Say y to enable the regulator
+	  driver.
+
 config REGULATOR_LP8788
 	tristate "TI LP8788 Power Regulators"
 	depends on MFD_LP8788
@@ -524,6 +534,14 @@ config REGULATOR_MT6397
 	  This driver supports the control of different power rails of device
 	  through regulator interface.
 
+config REGULATOR_MTK
+	bool "MTK regulator subsystem"
+	help
+	  Say Y here to select this option to enable
+	  mtk_regulator framework.
+	  This framework is for linux and non-linux regulator driver
+	  more easy to use for regulator users.
+
 config REGULATOR_PALMAS
 	tristate "TI Palmas PMIC Regulators"
 	depends on MFD_PALMAS
@@ -701,6 +719,15 @@ config REGULATOR_SKY81452
 
 	  This driver can also be built as a module. If so, the module
 	  will be called sky81452-regulator.
+
+config REGULATOR_SYM827
+	tristate "Silergy SYM827 regulator"
+	depends on I2C
+	help
+	  Say y here to support for the Silergy SYM827.
+	  The SYM827 is a high efficiency synchronous step down
+	  converter 6A DC-DC Buck controlled through an I2C
+	  interface.
 
 config REGULATOR_TI_ABB
 	tristate "TI Adaptive Body Bias on-chip LDO"
@@ -880,3 +907,10 @@ config REGULATOR_WM8994
 
 endif
 
+
+#PRIZE
+config TPS65132_SUPPORT
+  bool CONFIG_TPS65132_SUPPORT
+  default no
+  help
+    CONFIG_TPS65132_SUPPORT

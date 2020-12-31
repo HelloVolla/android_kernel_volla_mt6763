@@ -27,6 +27,7 @@ enum tick_nohz_mode {
  *			timer is modified for nohz sleeps. This is necessary
  *			to resume the tick timer operation in the timeline
  *			when the CPU returns from nohz sleep.
+ * @next_tick:	Next tick to be fired when in dynticks mode.
  * @tick_stopped:	Indicator that the idle tick has been stopped
  * @idle_jiffies:	jiffies at the entry to idle for idle time accounting
  * @idle_calls:		Total number of idle calls
@@ -44,6 +45,7 @@ struct tick_sched {
 	unsigned long			check_clocks;
 	enum tick_nohz_mode		nohz_mode;
 	ktime_t				last_tick;
+	ktime_t				next_tick;
 	int				inidle;
 	int				tick_stopped;
 	unsigned long			idle_jiffies;
@@ -61,6 +63,13 @@ struct tick_sched {
 	ktime_t				idle_expires;
 	int				do_timer_last;
 	atomic_t			tick_dep_mask;
+#ifdef CONFIG_MEDIATEK_SOLUTION
+	ktime_t				idle_entrytime_wo_cpuoffline;
+	ktime_t				idle_sleeptime_wo_cpuoffline;
+	ktime_t				iowait_sleeptime_wo_cpuoffline;
+	unsigned long			next_jiffies;
+	int             cpu_plug_off_flag;
+#endif
 };
 
 extern struct tick_sched *tick_get_tick_sched(int cpu);
