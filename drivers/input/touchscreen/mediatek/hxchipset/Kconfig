@@ -3,7 +3,7 @@
 #
 
 config TOUCHSCREEN_HIMAX_I2C_HX83102
-        bool "HIMAX chipset i2c touchscreen"
+        tristate "HIMAX chipset i2c touchscreen"
         help
           This enables support for HIMAX CHIPSET over I2C based touchscreens.
           when turn this option on, TOUCHSCREEN_HIMAX_I2C touch driver
@@ -11,7 +11,7 @@ config TOUCHSCREEN_HIMAX_I2C_HX83102
           If unsure,say N.
 
 config TOUCHSCREEN_HIMAX_DEBUG
-        bool "HIMAX debug function"
+        tristate "HIMAX debug function"
         depends on TOUCHSCREEN_HIMAX_I2C
         help
           This enables support for HIMAX debug function.

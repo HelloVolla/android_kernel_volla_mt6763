@@ -86,6 +86,7 @@ config TOUCHSCREEN_HIMAX_CHIPSET
            module will be called.
 
 source "drivers/input/touchscreen/mediatek/hxchipset/Kconfig"
+
 #prize-add-hx83102-pengzhipeng-20200304-end
 
 config TOUCHSCREEN_MTK_NT36xxx
