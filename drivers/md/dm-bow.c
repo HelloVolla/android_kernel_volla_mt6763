@@ -12,7 +12,9 @@
 #include <linux/module.h>
 
 #define DM_MSG_PREFIX "bow"
+#ifndef SECTOR_SIZE
 #define SECTOR_SIZE 512
+#endif
 
 struct log_entry {
 	u64 source;
@@ -792,6 +794,7 @@ static int prepare_unchanged_range(struct bow_context *bc, struct bow_range *br,
 	 */
 	original_type = br->type;
 	sector0 = backup_br->sector;
+	bc->trims_total -= range_size(backup_br);
 	if (backup_br->type == TRIMMED)
 		list_del(&backup_br->trimmed_list);
 	backup_br->type = br->type == SECTOR0_CURRENT ? SECTOR0_CURRENT

@@ -389,8 +389,6 @@ static struct inet6_dev *ipv6_add_dev(struct net_device *dev)
 
 	if (ndev->cnf.stable_secret.initialized)
 		ndev->cnf.addr_gen_mode = IN6_ADDR_GEN_MODE_STABLE_PRIVACY;
-	else
-		ndev->cnf.addr_gen_mode = ipv6_devconf_dflt.addr_gen_mode;
 
 	ndev->cnf.mtu6 = dev->mtu;
 	ndev->nd_parms = neigh_parms_alloc(dev, &nd_tbl);
@@ -3184,6 +3182,10 @@ static void addrconf_addr_gen(struct inet6_dev *idev, bool prefix_route)
 	if (netif_is_l3_master(idev->dev))
 		return;
 
+	/* no link local addresses on devices flagged as slaves */
+	if (idev->dev->flags & IFF_SLAVE)
+		return;
+
 	ipv6_addr_set(&addr, htonl(0xFE800000), 0, 0, 0);
 
 	switch (idev->cnf.addr_gen_mode) {
@@ -3230,6 +3232,10 @@ static void addrconf_dev_config(struct net_device *dev)
 	    (dev->type != ARPHRD_NONE) &&
 	    (dev->type != ARPHRD_PUREIP)) {
 		/* Alas, we support only Ethernet autoconfiguration. */
+		idev = __in6_dev_get(dev);
+		if (!IS_ERR_OR_NULL(idev) && dev->flags & IFF_UP &&
+		    dev->flags & IFF_MULTICAST)
+			ipv6_mc_up(idev);
 		return;
 	}
 
@@ -5633,13 +5639,20 @@ static void __ipv6_ifa_notify(int event, struct inet6_ifaddr *ifp)
 	switch (event) {
 	case RTM_NEWADDR:
 		/*
-		 * If the address was optimistic
-		 * we inserted the route at the start of
-		 * our DAD process, so we don't need
-		 * to do it again
+		 * If the address was optimistic we inserted the route at the
+		 * start of our DAD process, so we don't need to do it again.
+		 * If the device was taken down in the middle of the DAD
+		 * cycle there is a race where we could get here without a
+		 * host route, so nothing to insert. That will be fixed when
+		 * the device is brought up.
 		 */
-		if (!rcu_access_pointer(ifp->rt->rt6i_node))
+		if (ifp->rt && !rcu_access_pointer(ifp->rt->rt6i_node)) {
 			ip6_ins_rt(ifp->rt);
+		} else if (!ifp->rt && (ifp->idev->dev->flags & IFF_UP)) {
+			pr_warn("BUG: Address %pI6c on device %s is missing its host route.\n",
+				&ifp->addr, ifp->idev->dev->name);
+		}
+
 		if (ifp->idev->cnf.forwarding)
 			addrconf_join_anycast(ifp);
 		if (!ipv6_addr_any(&ifp->peer_addr))

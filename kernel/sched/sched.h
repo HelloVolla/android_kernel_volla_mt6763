@@ -75,7 +75,13 @@ static inline void update_idle_core(struct rq *rq) { }
 #ifdef CONFIG_64BIT
 # define NICE_0_LOAD_SHIFT	(SCHED_FIXEDPOINT_SHIFT + SCHED_FIXEDPOINT_SHIFT)
 # define scale_load(w)		((w) << SCHED_FIXEDPOINT_SHIFT)
-# define scale_load_down(w)	((w) >> SCHED_FIXEDPOINT_SHIFT)
+# define scale_load_down(w) \
+({ \
+	unsigned long __w = (w); \
+	if (__w) \
+		__w = max(2UL, __w >> SCHED_FIXEDPOINT_SHIFT); \
+	__w; \
+})
 #else
 # define NICE_0_LOAD_SHIFT	(SCHED_FIXEDPOINT_SHIFT)
 # define scale_load(w)		(w)
@@ -1515,6 +1521,12 @@ struct sched_class {
 
 #ifdef CONFIG_UCLAMP_TASK
 	int uclamp_enabled;
+#endif
+
+#ifdef CONFIG_SCHED_WALT
+	void (*fixup_cumulative_runnable_avg)(struct rq *rq,
+					      struct task_struct *task,
+					      u64 new_task_load);
 #endif
 };
 

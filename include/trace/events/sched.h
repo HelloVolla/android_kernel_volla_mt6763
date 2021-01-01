@@ -2051,7 +2051,7 @@ TRACE_EVENT(walt_update_task_ravg,
 		__field(	 int,	cpu			)
 		__field(	u64,	cs			)
 		__field(	u64,	ps			)
-		__field(uint64_t,	util			)
+		__field(	u64,	util			)
 		__field(	u32,	curr_window		)
 		__field(	u32,	prev_window		)
 		__field(	u64,	nt_cs			)
