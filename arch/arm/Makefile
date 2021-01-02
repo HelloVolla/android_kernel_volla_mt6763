@@ -344,9 +344,12 @@ $(INSTALL_TARGETS):
 %.dtb: | scripts $(DRVGEN_FILE_LIST)
 	$(Q)$(MAKE) $(build)=$(boot)/dts MACHINE=$(MACHINE) $(boot)/dts/$@
 
+%.dtbo: | scripts $(DRVGEN_FILE_LIST)
+	$(Q)$(MAKE) $(build)=$(boot)/dts MACHINE=$(MACHINE) $(boot)/dts/$@
+
 PHONY += dtbs dtbs_install
 
-dtbs: prepare scripts dtbo_check
+dtbs: prepare scripts drvgen
 	$(Q)$(MAKE) $(build)=$(boot)/dts
 
 dtbs_install:
