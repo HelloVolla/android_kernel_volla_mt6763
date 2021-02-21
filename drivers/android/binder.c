@@ -2823,7 +2823,10 @@ static bool binder_proc_transaction(struct binder_transaction *t,
 	if (oneway) {
 		BUG_ON(thread);
 		if (node->has_async_transaction) {
-			pending_async = true;
+			// Halium: possible libgbinder bug workaround
+			/*pending_async = true;*/
+			pr_info("%d has pending async transaction, but still adding a new transaction to todo list (gbinder bug workaround)\n",
+					proc->pid);
 		} else {
 			node->has_async_transaction = true;
 		}
@@ -3733,7 +3736,8 @@ static int binder_thread_write(struct binder_proc *proc,
 
 				buf_node = buffer->target_node;
 				binder_node_inner_lock(buf_node);
-				BUG_ON(!buf_node->has_async_transaction);
+				// Halium: possible libgbinder bug workaround
+				/*BUG_ON(!buf_node->has_async_transaction);*/
 				BUG_ON(buf_node->proc != proc);
 				w = binder_dequeue_work_head_ilocked(
 						&buf_node->async_todo);
