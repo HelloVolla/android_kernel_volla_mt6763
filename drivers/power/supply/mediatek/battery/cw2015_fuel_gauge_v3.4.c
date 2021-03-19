@@ -309,13 +309,13 @@ static int cw_init(struct cw_battery *cw_bat)
         }
     } else {
     	for(i = 0; i < SIZE_BATINFO; i++) { 
-	        ret = cw_read(cw_bat->client, (REG_BATINFO + i), &reg_val);
-	        if (ret < 0)
-	        	return ret;
-	        
+			ret = cw_read(cw_bat->client, (REG_BATINFO + i), &reg_val);
+			if (ret < 0)
+				return ret;
+
 			printk(KERN_ERR"%X\n", reg_val);
-	        if (config_info[i] != reg_val)
-	            break;
+			if (config_info[i] != reg_val)
+				break;
         }
         if (i != SIZE_BATINFO) {
 			cw_printk(1,"config didn't match, need update config\n");

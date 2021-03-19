@@ -578,8 +578,8 @@ static unsigned long lowmem_scan(struct shrinker *s, struct shrink_control *sc)
 		short oom_score_adj;
 
         // prize zengke 20180620 add for ddr test,ignore memtest thread-----begin
-        if (strstr("memtester", tsk->comm) || strstr("pri.factorytest", tsk->comm))
-                continue;
+		if (strstr("memtester", tsk->comm) || strstr("pri.factorytest", tsk->comm))
+			continue;
         // prize zengke 20180620 add for ddr test,ignore memtest thread-----end
 
 		if (tsk->flags & PF_KTHREAD)
