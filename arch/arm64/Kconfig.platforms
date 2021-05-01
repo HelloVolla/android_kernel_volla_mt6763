@@ -113,7 +113,6 @@ config MACH_MT6757
 	select MFD_SYSCON
 	select MTK_BASE_POWER
 	select MTK_POWER_GS
-	select MTK_SYSTRACKER_V2
 	select MTK_GIC_V3_EXT
 	select MTK_LM_MODE if !MTK_GMO_RAM_OPTIMIZE
 	select MTK_PLAT_SRAM_FLAG
@@ -169,7 +168,6 @@ config MACH_MT6758
 	select MTK_IRQ_NEW_DESIGN_DEBUG
 	select MTK_SYSIRQ
 	select MTK_TIMER
-	select MTK_SYSTRACKER_V2
 	help
 	  This enables support for MediaTek Helio P30 - MT6758
 	  Highly power-efficient, performance-oriented 4G LTE processor for premium,
@@ -199,7 +197,6 @@ config MACH_MT6765
 	select MTK_SYSIRQ
 	select MTK_TIMER_APXGPT
 	select MTK_TIMER_TIMESYNC
-	select MTK_SYSTRACKER_V2
 	select MTK_BOUNCING_CHECK if MTK_AEE_FEATURE
 	select MTK_LM_MODE if !MTK_GMO_RAM_OPTIMIZE
 	select MTK_DRAMC
@@ -254,7 +251,6 @@ config MACH_MT6761
 	select MTK_DEBUG_LATCH
 	select MTK_DFD_INTERNAL_DUMP
 	select MTK_PLAT_SRAM_FLAG
-	select MTK_SYSTRACKER_V2
 	select MTK_L2C_PARITY_CHECK
 	help
 	  This enables support for MediaTek MT6761
@@ -289,7 +285,6 @@ config MACH_MT6763
 	select MTK_BOUNCING_CHECK
 	select HIE
 	select MTK_IO_BOOST
-	select MTK_SYSTRACKER_V2
 	select MTK_TIMER_APXGPT
 	select MTK_PLAT_SRAM_FLAG
 	select MTK_IRQ_NEW_DESIGN
@@ -349,7 +344,6 @@ config MACH_MT6779
 	select MTK_LM_MODE if !MTK_GMO_RAM_OPTIMIZE
 	select DEBUG_TIMEKEEPING
 	select SDCARD_FS
-	select MTK_SYSTRACKER_V2
 	select MTK_DRAMC
 	select MTK_SYS_CIRQ
 	select MTK_DFD_INTERNAL_DUMP
@@ -411,7 +405,6 @@ config MACH_MT3967
 	select MTK_GIC_TARGET_ALL
 	select MTK_BOUNCING_CHECK if MTK_AEE_FEATURE
 	select MTK_LM_MODE if !MTK_GMO_RAM_OPTIMIZE
-	select MTK_SYSTRACKER_V2
 	select MTK_PID_MAP
 	select DEBUG_TIMEKEEPING
 	select MTK_DEVMPU
