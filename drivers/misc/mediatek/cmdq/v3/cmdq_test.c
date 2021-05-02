@@ -118,7 +118,7 @@ static struct proc_dir_entry *gCmdqTestProcEntry;
 #define CMDQ_TEST_FAIL(string, args...) \
 do {			\
 if (1) {	\
-	pr_notice("[CMDQ][ERR]TEST FAIL: "string, ##args); \
+	pr_debug("[CMDQ][ERR]TEST FAIL: "string, ##args); \
 }			\
 } while (0)
 

@@ -152,7 +152,7 @@ struct mm_qos_request *getRequest(uint32_t thread_id, uint32_t port)
 #define CMDQ_LOG_PMQOS(string, args...) \
 do {			\
 if (cmdq_core_should_pmqos_log()) { \
-	pr_notice("[CMDQ][MDP]"string, ##args); \
+	pr_debug("[CMDQ][MDP]"string, ##args); \
 }			\
 } while (0)
 
