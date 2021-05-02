@@ -366,7 +366,7 @@ int mix_event_init(void)
 
 	ret = alloc_chrdev_region(&s_ge_status_dev, 0, 1, "mix_event");
 	if (ret) {
-		pr_notice("[mixdev] alloc chrdev fail (%d)\n", ret);
+		pr_debug("[mixdev] alloc chrdev fail (%d)\n", ret);
 		goto _exit_1;
 	}
 
@@ -375,7 +375,7 @@ int mix_event_init(void)
 
 	ret = cdev_add(&s_ge_char_dev, s_ge_status_dev, 1);
 	if (ret) {
-		pr_notice("[mixdev] cdev_add failed\n");
+		pr_debug("[mixdev] cdev_add failed\n");
 		goto _exit_2;
 	}
 

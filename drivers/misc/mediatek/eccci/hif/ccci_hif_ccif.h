@@ -236,7 +236,7 @@ static inline int ccci_ccif_hif_set_wakeup_src(unsigned char hif_id, int value)
 
 	if (md_ctrl) {
 		que_bitmap = ccif_read32(md_ctrl->ccif_ap_base, APCCIF_RCHNUM);
-		pr_notice("[ccci1/cif] CCIF wakeup channel: 0x%0x\n",
+		pr_debug("[ccci1/cif] CCIF wakeup channel: 0x%0x\n",
 			que_bitmap);
 		if (que_bitmap != 0x1 << AP_MD_PEER_WAKEUP &&
 			que_bitmap != 0x0)

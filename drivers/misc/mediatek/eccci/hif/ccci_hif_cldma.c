@@ -1812,7 +1812,7 @@ static void cldma_irq_work(struct work_struct *work)
 
 void __weak dump_emi_latency(void)
 {
-	pr_notice("[ccci/dummy] %s is not supported!\n", __func__);
+	pr_debug("[ccci/dummy] %s is not supported!\n", __func__);
 }
 
 void __weak cldma_dump_register(struct md_cd_ctrl *md_ctrl)

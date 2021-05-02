@@ -67,7 +67,7 @@ int ccci_log_write(const char *fmt, ...)
 
 	temp_log = kmalloc(CCCI_LOG_MAX_WRITE, GFP_ATOMIC);
 	if (temp_log == NULL) {
-		/*pr_notice("[ccci0/util]alloc local buff fail p01\n");*/
+		/*pr_debug("[ccci0/util]alloc local buff fail p01\n");*/
 		return -ENODEV;
 	}
 
@@ -130,7 +130,7 @@ int ccci_log_write_raw(unsigned int set_flags, const char *fmt, ...)
 
 	temp_log = kmalloc(CCCI_LOG_MAX_WRITE, GFP_ATOMIC);
 	if (temp_log == NULL) {
-		/*pr_notice("[ccci0/util]alloc local buff fail p1\n");*/
+		/*pr_debug("[ccci0/util]alloc local buff fail p1\n");*/
 		return -ENODEV;
 	}
 
@@ -433,7 +433,7 @@ int ccci_dump_write(int md_id, int buf_type,
 
 	temp_log = kmalloc(CCCI_LOG_MAX_WRITE, GFP_ATOMIC);
 	if (temp_log == NULL) {
-		/*pr_notice("[ccci0/util]alloc local buff fail p2\n");*/
+		/*pr_debug("[ccci0/util]alloc local buff fail p2\n");*/
 		return -7;
 	}
 
@@ -506,7 +506,7 @@ int ccci_dump_write(int md_id, int buf_type,
 		ptr->max_num = ptr->write_pos;
 	spin_unlock_irqrestore(&ptr->lock, flags);
 
-	/* pr_notice("[ccci0/util][ccci_log] has write %d, %d\n",
+	/* pr_debug("[ccci0/util][ccci_log] has write %d, %d\n",
 	 *		write_len, ptr->write_pos);
 	 */
 	kfree(temp_log);
@@ -611,7 +611,7 @@ static ssize_t ccci_dump_read(struct file *file, char __user *buf,
 				left -= read_len;
 				user_info->sep_cnt2[i] += read_len;
 			} else
-				pr_notice("[ccci0/util]dump copy to ser fail%d[-1]\n",
+				pr_debug("[ccci0/util]dump copy to ser fail%d[-1]\n",
 					ret);
 		}
 
@@ -640,7 +640,7 @@ static ssize_t ccci_dump_read(struct file *file, char __user *buf,
 					user_info->sep_cnt1[i][index]
 						+= read_len;
 				} else
-					pr_notice(
+					pr_debug(
 					"[ccci0/util]dump copy to ser fail%d[-2]\n",
 						ret);
 			}
@@ -665,7 +665,7 @@ static ssize_t ccci_dump_read(struct file *file, char __user *buf,
 					user_info->read_idx[i][index]
 						+= read_len;
 				} else
-					pr_notice(
+					pr_debug(
 					"[ccci0/util]dump copy to ser fail%d\n",
 						ret);
 			} else { /* ring buffer read */
@@ -696,7 +696,7 @@ static ssize_t ccci_dump_read(struct file *file, char __user *buf,
 						user_info->read_idx[i][index]
 							+= read_len;
 					} else
-						pr_notice("[ccci0/util]dump copy to ser fail%d[1]\n",
+						pr_debug("[ccci0/util]dump copy to ser fail%d[1]\n",
 									ret);
 					ret = copy_to_user(&buf[has_read],
 						ptr->buffer,
@@ -708,7 +708,7 @@ static ssize_t ccci_dump_read(struct file *file, char __user *buf,
 						user_info->read_idx[i][index]
 							+= available - read_len;
 					} else
-						pr_notice("[ccci0/util]dump copy to ser fail%d[2]\n",
+						pr_debug("[ccci0/util]dump copy to ser fail%d[2]\n",
 									ret);
 				} else {
 					ret = copy_to_user(&buf[has_read],
@@ -720,7 +720,7 @@ static ssize_t ccci_dump_read(struct file *file, char __user *buf,
 						user_info->read_idx[i][index]
 							+= available;
 					} else
-						pr_notice("[ccci0/util]dump copy to ser fail%d[3]\n",
+						pr_debug("[ccci0/util]dump copy to ser fail%d[3]\n",
 									ret);
 				}
 			}
@@ -746,7 +746,7 @@ static int ccci_dump_open(struct inode *inode, struct file *file)
 
 	user_info = kzalloc(sizeof(struct ccci_user_ctlb), GFP_KERNEL);
 	if (user_info == NULL) {
-		/*pr_notice("[ccci0/util]fail to alloc memory for ctlb\n"); */
+		/*pr_debug("[ccci0/util]fail to alloc memory for ctlb\n"); */
 		return -1;
 	}
 
@@ -802,7 +802,7 @@ static void ccci_dump_buffer_init(void)
 
 	ccci_dump_proc = proc_create("ccci_dump", 0444, NULL, &ccci_dump_fops);
 	if (ccci_dump_proc == NULL) {
-		pr_notice("[ccci0/util]fail to create proc entry for dump\n");
+		pr_debug("[ccci0/util]fail to create proc entry for dump\n");
 		return;
 	}
 
@@ -848,7 +848,7 @@ static void ccci_dump_buffer_init(void)
 					ptr->buf_size = node_ptr->init_size;
 					ptr->attr = node_ptr->init_attr;
 				} else
-					pr_notice("[ccci0/util]fail to allocate buff index %d\n",
+					pr_debug("[ccci0/util]fail to allocate buff index %d\n",
 						node_ptr->index);
 			}
 			node_ptr++;
@@ -1147,7 +1147,7 @@ void ccci_log_init(void)
 
 	ccci_log_proc = proc_create("ccci_log", 0444, NULL, &ccci_log_fops);
 	if (ccci_log_proc == NULL) {
-		pr_notice("[ccci0/util]fail to create proc entry for log\n");
+		pr_debug("[ccci0/util]fail to create proc entry for log\n");
 		return;
 	}
 	ccci_log_buf.buffer = kmalloc(CCCI_LOG_BUF_SIZE, GFP_KERNEL);
