@@ -232,4 +232,3 @@ config ANDROID_DEFAULT_SETTING
 	  to avoid missing basic or common setting
 	  Say Y here if the project is for android product
 	  If unsure, say N
-
