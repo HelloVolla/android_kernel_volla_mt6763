@@ -120,7 +120,7 @@ int kdCISModulePowerOn(struct i2c_client* client,  bool On)
 			gpio_direction_output(dcam_data->rst_pin,0);
 			mdelay(5);
 			set_dvdd_regulator(1);
-			//set_avdd_regulator(1);
+			set_avdd_regulator(1);
 			mdelay(2);
 			gpio_direction_output(dcam_data->pdn_pin,0);
 			mdelay(1);
@@ -129,7 +129,7 @@ int kdCISModulePowerOn(struct i2c_client* client,  bool On)
 			gpio_direction_output(dcam_data->pdn_pin,1);
 			gpio_direction_output(dcam_data->rst_pin,0);
 			mdelay(2);
-			//set_avdd_regulator(0);
+			set_avdd_regulator(0);
 			set_dvdd_regulator(0);
 		}
 	}
@@ -137,13 +137,13 @@ int kdCISModulePowerOn(struct i2c_client* client,  bool On)
 	{
 	//gc6133+gc6153
 		if (On){
-			//set_avdd_regulator(1);
+			set_avdd_regulator(1);
 			mdelay(5);
 			gpio_direction_output(dcam_data->pdn_pin,1);
 			mdelay(4);
 			gpio_direction_output(dcam_data->pdn_pin,0);
 		}else{
-			//set_avdd_regulator(0);
+			set_avdd_regulator(0);
 			mdelay(5);
 			gpio_direction_output(dcam_data->pdn_pin,1);
 		}
@@ -154,13 +154,13 @@ int kdCISModulePowerOn(struct i2c_client* client,  bool On)
 		if (On){
 			gpio_direction_output(dcam_data->pdn_pin,0);
 			mdelay(3);
-			//set_avdd_regulator(1);
+			set_avdd_regulator(1);
 			mdelay(3);
 			gpio_direction_output(dcam_data->pdn_pin,1);
 			mdelay(1);
 			gpio_direction_output(dcam_data->pdn_pin,0);
 		}else{
-			//set_avdd_regulator(0);
+			set_avdd_regulator(0);
 			mdelay(5);
 			gpio_direction_output(dcam_data->pdn_pin,1);
 		}

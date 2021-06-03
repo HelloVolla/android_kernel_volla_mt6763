@@ -1786,9 +1786,7 @@ static int bmg_i2c_probe(struct i2c_client *client, const struct i2c_device_id *
 		goto exit;
 	}
 	obj->hw = hw;
-	//prize-modify-pengzhipeng-20190715-start
-	obj->hw->direction = 2;
-	//prize-modify-pengzhipeng-20190715-end
+    obj->hw->direction = 6;
 	err = hwmsen_get_convert(obj->hw->direction, &obj->cvt);
 	if (err) {
 		BMIGYRO_ERR("invalid direction: %d\n", obj->hw->direction);
@@ -1903,9 +1901,7 @@ static int bmg_i2c_remove(struct i2c_client *client)
 #ifdef CONFIG_OF
 static const struct of_device_id gyro_of_match[] = {
 	{.compatible = "mediatek,gyro"},
-//prize added by huarui, sensor driver, 20190111-start
 	{.compatible = "bosch,bmi160_gyro"},
-//prize added by huarui, sensor driver, 20190111-end
 	{},
 };
 #endif

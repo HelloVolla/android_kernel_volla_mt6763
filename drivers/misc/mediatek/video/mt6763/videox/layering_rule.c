@@ -33,9 +33,7 @@ static struct layering_rule_info_t l_rule_info;
 
 int emi_bound_table[HRT_BOUND_NUM][HRT_LEVEL_NUM] = {
 	/* HRT_BOUND_TYPE_LP4 */
-	//prize-modify-pengzhipeng-20190921-start
-	{300, 400, 400, 600},
-	//prize-modify-pengzhipeng-20190921-end
+	{400, 400, 400, 600},
 	/* HRT_BOUND_TYPE_LP3 */
 	{350, 350, 350, 350},
 	/* HRT_BOUND_TYPE_LP4_1CH */

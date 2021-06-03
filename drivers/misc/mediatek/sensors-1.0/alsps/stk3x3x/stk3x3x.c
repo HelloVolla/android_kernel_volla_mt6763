@@ -125,14 +125,14 @@ extern struct platform_device *get_alsps_platformdev(void);
  * extern functions
 *******************************************************************************/
 #ifdef STK_TUNE0
-#define STK_MAX_MIN_DIFF		150  //80 
-#define STK_LT_N_CT				100  //30 
-#define STK_HT_N_CT				130  //60 
+#define STK_MAX_MIN_DIFF		100  //80 
+#define STK_LT_N_CT				50  //30 90    
+#define STK_HT_N_CT				67  //60 135  
 #endif /* #ifdef STK_TUNE0 */
 
-#define STK_H_PS				600
-#define STK_H_HT				300
-#define STK_H_LT				200
+#define STK_H_PS				5000
+#define STK_H_HT				380
+#define STK_H_LT				350
 
 #define STK_ALS_THRESHOLD				30
 
@@ -606,7 +606,7 @@ int stk3x3x_read_als(struct i2c_client *client, u16 *data)
 	als_data = (buf[0] << 8) | (buf[1]);
 
 	obj->als_code_last = als_data;
-	APS_LOG("stk3x3x_read_als: %d\n", als_data);
+	//APS_LOG("stk3x3x_read_als: %d\n", als_data);
 #ifdef STK_ALS_MID_FIR
 	if (obj->als_data_filter.number < STK_ALS_MID_FIR_LEN)
 	{
@@ -736,6 +736,60 @@ int stk3x3x_read_id(struct i2c_client *client)
 	APS_LOG("%s: PID=0x%x, VID=0x%x\n", __func__, buf[0], buf[1]);
 	return 0;
 }
+int stk3x3x_get_ps_thd_h(struct i2c_client *client, u16 *data)
+{
+    struct stk3x3x_priv *obj = i2c_get_clientdata(client);
+    int ret = 0;
+    u8 buf[2];
+
+    if (NULL == client)
+    {
+        APS_ERR("i2c client is NULL\n");
+        return -EINVAL;
+    }
+
+    ret = stk3x3x_master_recv(client, obj->addr.thdh1_ps, buf, 0x02);
+
+    if (ret < 0)
+    {
+        APS_DBG("error: %d\n", ret);
+        return -EFAULT;
+    }
+    else
+    {
+        *data = (buf[0] << 8) | (buf[1]);
+    }
+
+    return 0;
+}
+
+int stk3x3x_get_ps_thd_l(struct i2c_client *client, u16 *data)
+{
+    struct stk3x3x_priv *obj = i2c_get_clientdata(client);
+    int ret = 0;
+    u8 buf[2];
+
+    if (NULL == client)
+    {
+        APS_ERR("i2c client is NULL\n");
+        return -EINVAL;
+    }
+
+    ret = stk3x3x_master_recv(client, obj->addr.thdl1_ps, buf, 0x02);
+
+    if (ret < 0)
+    {
+        APS_DBG("error: %d\n", ret);
+        return -EFAULT;
+    }
+    else
+    {
+        *data = (buf[0] << 8) | (buf[1]);
+    }
+
+    return 0;
+}
+
 /*----------------------------------------------------------------------------*/
 int stk3x3x_read_ps(struct i2c_client *client, u16 *data)
 {
@@ -882,7 +936,7 @@ int stk3x3x_write_sw_reset(struct i2c_client *client)
 		return -EFAULT;
 	}
 
-	msleep(13);
+	msleep(30);
 	return 0;
 }
 /*----------------------------------------------------------------------------*/
@@ -994,9 +1048,9 @@ int stk3x3x_write_als_low_thd(struct i2c_client *client, u16 thd)
 static int show_allreg(void)
 {
 	int ret = 0;
-	u8 rbuf[0x22];
+	u8 reg[14] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x4F, 0xA0, 0xA1, 0xDB, 0xF4, 0xFA, 0x3E, 0x3F};
+	u8 rbuf;
 	int cnt;
-	memset(rbuf, 0, sizeof(rbuf));
 
 	if (!stk3x3x_obj)
 	{
@@ -1004,71 +1058,16 @@ static int show_allreg(void)
 		return 0;
 	}
 
-	ret = stk3x3x_master_recv(stk3x3x_obj->client, 0, &rbuf[0], 7);
-
-	if (ret < 0)
-	{
-		APS_DBG("error: %d\n", ret);
-		return -EFAULT;
+	for(cnt = 0; cnt < 14; cnt++){
+		ret = stk3x3x_master_recv(stk3x3x_obj->client, reg[cnt], &rbuf, 1);
+		if (ret < 0)
+		{
+			APS_DBG("error: %d\n", ret);
+		}else{
+			APS_LOG("reg[0x%x]=0x%x\n", reg[cnt], rbuf);
+		}		
 	}
-
-	ret = stk3x3x_master_recv(stk3x3x_obj->client, 7, &rbuf[7], 7);
-
-	if (ret < 0)
-	{
-		APS_DBG("error: %d\n", ret);
-		return -EFAULT;
-	}
-
-	ret = stk3x3x_master_recv(stk3x3x_obj->client, 14, &rbuf[14], 7);
-
-	if (ret < 0)
-	{
-		APS_DBG("error: %d\n", ret);
-		return -EFAULT;
-	}
-
-	ret = stk3x3x_master_recv(stk3x3x_obj->client, 21, &rbuf[21], 7);
-
-	if (ret < 0)
-	{
-		APS_DBG("error: %d\n", ret);
-		return -EFAULT;
-	}
-
-	ret = stk3x3x_master_recv(stk3x3x_obj->client, 28, &rbuf[28], 4);
-
-	if (ret < 0)
-	{
-		APS_DBG("error: %d\n", ret);
-		return -EFAULT;
-	}
-
-	ret = stk3x3x_master_recv(stk3x3x_obj->client, STK_PDT_ID_REG, &rbuf[32], 2);
-
-	if (ret < 0)
-	{
-		APS_DBG("error: %d\n", ret);
-		return -EFAULT;
-	}
-
-	for (cnt = 0; cnt < 0x20; cnt++)
-	{
-		APS_LOG("reg[0x%x]=0x%x\n", cnt, rbuf[cnt]);
-	}
-
-	APS_LOG("reg[0x3E]=0x%x\n", rbuf[cnt]);
-	APS_LOG("reg[0x3F]=0x%x\n", rbuf[cnt++]);
-
-	ret = stk3x3x_master_recv(stk3x3x_obj->client, 0xFA, &rbuf[0], 1);
-
-	if (ret < 0)
-	{
-		APS_DBG("error: %d\n", ret);
-		return -EFAULT;
-	}
-	APS_LOG("reg[0xFA]=0x%x\n", rbuf[0]);
-
+	
 	return 0;
 }
 #endif
@@ -1328,6 +1327,7 @@ static int stk3x3x_enable_ps(struct i2c_client *client, int enable, int validate
 #ifdef STK_TUNE0
 #ifdef CTTRACKING
 		obj->ps_thd_update = false;
+        obj->data_count = 0;
 #endif
 #ifndef CALI_EVERY_TIME
 
@@ -1775,6 +1775,8 @@ static int stk_ps_tune_zero_func_fae(struct stk3x3x_priv *obj)
 #ifdef CTTRACKING
 	uint16_t ct_value = 0;
 #endif
+   // int err;
+	uint16_t high_thd, low_thd;
 	int32_t word_data;
 	u8 flag;
 	bool ps_enabled = false;
@@ -1789,6 +1791,49 @@ static int stk_ps_tune_zero_func_fae(struct stk3x3x_priv *obj)
 	{
 		return 0;
 	}
+
+    obj->data_count++;
+	if(obj->data_count > 10000){
+		obj->data_count = 0;
+	}else if((obj->data_count%20)==6){
+        ret = stk3x3x_read_flag(obj->client, &flag);
+        if (ret < 0)
+        {
+            APS_ERR("%s: get flag failed, err=0x%x\n", __func__, ret);
+            return ret;
+        }
+
+        ret = stk3x3x_master_recv(obj->client, 0x11, buf, 2);
+
+        if (ret < 0)
+        {
+            APS_ERR("%s fail, err=0x%x", __func__, ret);
+            return ret;
+        }
+
+        word_data = (buf[0] << 8) | buf[1];
+
+		APS_LOG("cur ps=%d, flag=0x%x, dis=%d\n", word_data, flag, obj->ps_distance_last);
+		APS_LOG("psi_set=%d, psi=%d, smudge=%d\n", obj->psi_set, obj->psi, obj->ps_thd_update);
+	}else if((obj->data_count%200)==9){
+		ret = stk3x3x_get_ps_thd_h(obj->client, &high_thd);
+        if (ret < 0)
+        {
+            APS_ERR("%s fail, err=0x%x", __func__, ret);
+            return ret;
+        }        
+
+		ret = stk3x3x_get_ps_thd_l(obj->client, &low_thd);
+        if (ret < 0)
+        {
+            APS_ERR("%s fail, err=0x%x", __func__, ret);
+            return ret;
+        }  
+		APS_LOG("cur ht=%d, lt=%d\n", high_thd, low_thd);
+	}else if((obj->data_count%500)==8){
+		show_allreg();
+	}
+
 
 #ifdef CTTRACKING
 
@@ -1878,12 +1923,13 @@ static int stk_ps_tune_zero_func_fae(struct stk3x3x_priv *obj)
 
 		word_data = (buf[0] << 8) | buf[1];
 		//APS_LOG("%s: word_data=%d\n", __func__, word_data);
-
+		/*
 		if (word_data == 0)
 		{
 			//APS_ERR( "%s: incorrect word data (0)\n", __func__);
 			return 0xFFFF;
 		}
+		*/
 
 		if (word_data > obj->psa)
 		{
@@ -1902,7 +1948,11 @@ static int stk_ps_tune_zero_func_fae(struct stk3x3x_priv *obj)
 
 	if (diff > obj->stk_max_min_diff)
 	{
-		obj->psi_set = obj->psi;
+		if(obj->psi == 0){
+			obj->psi_set = 5;
+		}else{
+			obj->psi_set = obj->psi;
+		}
 		atomic_set(&obj->ps_high_thd_val, obj->psi + obj->stk_ht_n_ct);
 		atomic_set(&obj->ps_low_thd_val, obj->psi + obj->stk_lt_n_ct);
 #ifdef CALI_EVERY_TIME
@@ -2526,7 +2576,7 @@ static int stk3x3x_init_client(struct i2c_client *client)
 		return err;
 	}	
 
-	data = 0x0F;
+	data = 0x06;
 	err = stk3x3x_master_send(client, 0xA1, &data, 1);
 	if (err < 0)
 	{
@@ -3405,15 +3455,23 @@ static int stk3x3x_get_als_value(struct stk3x3x_priv *obj, u16 als)
 {
 	int idx;
 	int invalid = 0;
+	int level_high = 0;
+    int level_low  = 0;
+    int level_diff = 0;
+    int value_high = 0;
+    int value_low  = 0;
+    int value_diff = 0;
+	int value = 0;
 
-	for (idx = 0; idx < obj->als_level_num; idx++)
-	{
-		if (als < obj->hw.als_level[idx])
-		{
-			break;
-		}
-	}
-
+ 	for(idx = 0; idx < obj->als_level_num; idx++)
+ 	{
+ 	
+ 		if(als < obj->hw.als_level[idx])
+ 		{
+ 		break;
+ 		}
+ 	
+ 	}
 	if (idx >= obj->als_value_num)
 	{
 		APS_ERR("exceed range\n");
@@ -3436,15 +3494,28 @@ static int stk3x3x_get_als_value(struct stk3x3x_priv *obj, u16 als)
 	}
 	APS_LOG("stk3x3x_get_als_value: %d\n", obj->hw.als_value[idx]);
 
-	if (!invalid)
-	{
-		if (atomic_read(&obj->trace) & STK_TRC_CVT_ALS)
-		{
-			APS_DBG("ALS: %05d => %05d\n", als, obj->hw.als_value[idx]);
-		}
 
-		return obj->hw.als_value[idx];
-	}
+	if (!invalid){
+				 level_high = obj->hw.als_level[idx];
+				 level_low = (idx > 0) ? obj->hw.als_level[idx-1] : 0;
+
+				 level_diff = level_high - level_low;
+				 value_high = obj->hw.als_value[idx];
+				 value_low = (idx > 0) ? obj->hw.als_value[idx-1] : 0;
+				 value_diff = value_high - value_low;
+				 
+						
+				if ((level_low >= level_high) || (value_low >= value_high))
+                {
+					value = value_low;
+                }
+				 
+				else{
+					value = value_diff * (als - level_low) / level_diff + value_low;
+				APS_LOG("ALS: %d [%d, %d] => %d [%d, %d]  value_diff = %d level_diff = %d \n", als, level_low, level_high, value, value_low, value_high,value_diff,level_diff);		
+					}
+					return value;
+				}
 	else
 	{
 		if (atomic_read(&obj->trace) & STK_TRC_CVT_ALS)
@@ -4105,7 +4176,7 @@ static int als_get_data(int* value, int* status)
 
 	obj = stk3x3x_obj;
 
-	APS_LOG("als_get_data\n");
+	//APS_LOG("als_get_data\n");
 	if ((err = stk3x3x_read_als(obj->client, &obj->als)))
 	{
 		err = -1;
@@ -4122,11 +4193,14 @@ static int als_get_data(int* value, int* status)
 			obj->als_last = obj->als;
 			*value = stk3x3x_get_als_value(obj, obj->als);
 		}
+#if 0 //prize-chj-20190703 Use a simple light sensitivity factor instead of a device tree light level start
 		else
 		{
 			*value = stk3x3x_get_als_value(obj, obj->als_last);
 		}
-
+#endif
+            *value = obj->als * 36 / 100;
+ //prize-chj-20190703 Use a simple light sensitivity factor instead of a device tree light level end
 		*status = SENSOR_STATUS_ACCURACY_MEDIUM;
 	}
 
@@ -4270,18 +4344,16 @@ static int stk3x3x_init_reg(struct i2c_client *client)
 	//obj->irq_node = client->dev.of_node;
 	atomic_set(&obj->state_val, 0);
 
-	i2c_config_reg = STK_PS_PRS1 | STK_PS_GAIN8 | STK_PS_IT400;
+	i2c_config_reg = STK_PS_PRS1 | STK_PS_GAIN8 | STK_PS_IT100;
 	atomic_set(&obj->psctrl_val, i2c_config_reg);
 
-	i2c_config_reg = STK_ALS_PRS1 | STK_ALS_GAIN64 | STK_ALS_IT100;
+	i2c_config_reg = STK_ALS_PRS1 | STK_ALS_GAIN64 | STK_ALS_IT25;
 	atomic_set(&obj->alsctrl_val, i2c_config_reg);
 
 	i2c_config_reg = STK_ALSC_GAIN16;
 	atomic_set(&obj->alsctrl2_val, i2c_config_reg);
 
-	obj->ledctrl_val = STK_LED_25mA;
-	if (obj->pid != STK3338_PID)
-		obj->ledctrl_val = STK_LED_100mA;
+	obj->ledctrl_val = 0x60;
 	obj->wait_val = 0x1F; //STK_WAIT50;
 	obj->int_val = STK_INT_PS_MODE1;
 	obj->intell_val = STK_INTELL_25;
@@ -4513,7 +4585,7 @@ static int stk3x3x_i2c_probe(struct i2c_client *client, const struct i2c_device_
 	stk3x3x_init_flag = 0;
 	
 #if defined(CONFIG_PRIZE_HARDWARE_INFO)
-	strcpy(current_alsps_info.chip,"STK3338");
+	strcpy(current_alsps_info.chip,"STK3311");
 	sprintf(current_alsps_info.id,"0x%04x",client->addr);
 	strcpy(current_alsps_info.vendor,"Sensortek");
 	strcpy(current_alsps_info.more,"alsps");

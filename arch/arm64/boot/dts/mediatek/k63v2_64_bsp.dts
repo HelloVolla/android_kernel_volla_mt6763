@@ -84,26 +84,25 @@
 		data = <1>;
 		pwm_config = <0 3 0 0 0>;
 	};
-	/*prize-Modify motor voltage to 3V-pengzhipeng-20190627-start*/
 	vibrator0:vibrator@0 {
 		compatible = "mediatek,vibrator";
 		vib_timer = <25>;
 		vib_limit = <9>;
-		vib_vol= <13>;
+		vib_vol= <9>;
 	};
-	/*prize-Modify motor voltage to 3V-pengzhipeng-20190627-end*/
 };
 
 &i2c1 {
 /*  start sensor */
-	/*gsensor@68 {
+	/*gsensor@69 {
 		i2c_num	= <1>;
+		i2c_addr = <0x69 0 0 0>;
 		direction = <0>;
 		power_id = <0xffff>;
 		power_vol = <0>;
 		firlen = <16>;
 		is_batch_supported = <1>;
-	};*/
+	};
 
 	msensor@0d {
 		i2c_num = <1>;
@@ -112,7 +111,7 @@
 		power_id = <0xffff>;
 		power_vol = <0>;
 		is_batch_supported = <0>;
-	};
+	};*/
 
 	gyro@68 {
 		i2c_num = <1>;
@@ -124,7 +123,25 @@
 		is_batch_supported = <0>;
 	};
 
-	
+	/*alsps@51 {
+		pinctrl-names = "pin_default", "pin_cfg";
+		pinctrl-0 = <&alsps_intpin_default>;
+		pinctrl-1 = <&alsps_intpin_cfg>;
+		status = "okay";*/
+		/* customization */
+		/*i2c_num = <1>;
+		i2c_addr = <0x67 0 0 0>;
+		polling_mode_ps = <0>;
+		polling_mode_als = <1>;
+		power_id = <0xffff>;
+		power_vol = <0>;
+		als_level = <10 50 100 200 400 700 1000 1500 2200 3000 3500 4000 4500 5000 5500>;
+		als_value = <0 50 100 200 350 600 1100 1500 2200 3000 4000 6000 8000 10000 20000 20000>;
+		ps_threshold_high = <250>;
+		ps_threshold_low = <100>;
+		is_batch_supported_ps = <0>;
+		is_batch_supported_als = <0>;
+	};*/
 
 	barometer@77 {
 		i2c_num = <1>;
@@ -137,27 +154,7 @@
 	};
 /* end sensor */
 };
-&i2c3 {
-	alsps@51 {
-		pinctrl-names = "pin_default", "pin_cfg";
-		pinctrl-0 = <&alsps_intpin_default>;
-		pinctrl-1 = <&alsps_intpin_cfg>;
-		status = "okay";
-		/* customization */
-		i2c_num = <1>;
-		i2c_addr = <0x67 0 0 0>;
-		polling_mode_ps = <0>;
-		polling_mode_als = <1>;
-		power_id = <0xffff>;
-		power_vol = <0>;
-		als_level = <10 50 100 200 400 700 1000 1500 2200 3000 3500 4000 4500 5000 5500>;
-		als_value = <0 50 100 200 350 600 1100 1500 2200 3000 4000 6000 8000 10000 20000 20000>;
-		ps_threshold_high = <10050>;
-		ps_threshold_low = <10000>;
-		is_batch_supported_ps = <0>;
-		is_batch_supported_als = <0>;
-	};
-};
+
 &msdc0 {
 	status = "okay";
 };
@@ -176,7 +173,7 @@
 
 /* TOUCH start */
 &touch {
-	tpd-resolution = <1080 2340>;
+	tpd-resolution = <720 1520>;
 	use-tpd-button = <0>;
 	tpd-key-num = <3>;
 	tpd-key-local= <139 172 158 0>;
@@ -237,23 +234,45 @@
 	};
 };
 /* TOUCH end */
+
 &g_sensor {
 	i2c_num	= <1>;
-	direction = <5>;
+	direction = <3>;
 	power_id = <0xffff>;
 	power_vol = <0>;
 	firlen = <16>;
 	is_batch_supported = <1>;
 };
-/*
+
 &m_sensor {
 	i2c_num = <1>;
 	i2c_addr = <0x0c 0 0 0>;
-	direction = <0>;
+	direction = <3>;
 	power_id = <0xffff>;
 	power_vol = <0>;
 	is_batch_supported = <0>;
-};*/
+};
+
+&als {
+	interrupt-parent = <&eintc>;
+	interrupts = <6 IRQ_TYPE_EDGE_FALLING 6 0>;	
+	pinctrl-names = "pin_default", "pin_cfg";
+	pinctrl-0 = <&alsps_intpin_default>;
+	pinctrl-1 = <&alsps_intpin_cfg>;
+	status = "okay";
+	i2c_num = <1>;
+	i2c_addr = <0x67 0 0 0>;
+	polling_mode_ps = <0>;
+	polling_mode_als = <1>;
+	power_id = <0xffff>;
+	power_vol = <0>;
+	als_level = <10 50 100 200 400 700 1000 1500 2200 3000 3500 4000 4500 5000 5500>;
+	als_value = <0 50 100 200 350 600 1100 1500 2200 3000 4000 6000 8000 10000 20000 20000>;
+	ps_threshold_high = <250>;
+	ps_threshold_low = <100>;
+	is_batch_supported_ps = <0>;
+	is_batch_supported_als = <0>;
+};
 
 /* sensor gpio standization */
 &pio {
@@ -363,15 +382,13 @@
 	/* eint_level_trigger: 8,LEVEL_LOW(default);4,LEVEL_HIGH;others,LEVEL_LOW */
 	headset-eint-level-pol = <8>;
 	/*0--MD_MAX--UP_MAX--DW_MAX*/
-	/* prize modified by lifenfen,  meizu headset resistor is 185/288 less than normal, 20190313 begin */
-	headset-three-key-threshold = <0 80 206 400>;
-	/* prize modified by lifenfen,  meizu headset resistor is 185/288 less than normal, 20190313 end */
+	headset-three-key-threshold = <0 80 200 400>;
 	headset-three-key-threshold-CDD = <0 121 192 600>;
 	/*0--MD_MAX--VOICE_MAX--UP_MAX--DW_MAX*/
 	headset-four-key-threshold = <0 58 121 192 400>;
-	interrupt-parent = <&eintc>;
-    interrupts = <9 IRQ_TYPE_EDGE_FALLING 9 0>;
 	/* ACCDET GPIO standardization ACC mode no use */
+	interrupt-parent = <&eintc>;
+	interrupts = <9 IRQ_TYPE_EDGE_FALLING 9 0>;	
 	pinctrl-names = "default", "state_eint_as_int";
 	pinctrl-0 = <&accdet_pins_default>;
 	pinctrl-1 = <&accdet_pins_eint_as_int>;
@@ -416,38 +433,13 @@
 			output-low;
 		};
 	};
-	fmlna_pins_init: fmlna@0 {
-		pins_cmd_dat {
-			pins = <PINMUX_GPIO28__FUNC_GPIO28>;
-			slew-rate = <0>;
-			bias-disable;
-			output-low;
-		};
-	};
-	fmlna_pins_oh: fmlna@1 {
-		pins_cmd_dat {
-			pins = <PINMUX_GPIO28__FUNC_GPIO28>;
-			slew-rate = <1>;
-			output-high;
-		};
-	};
-	fmlna_pins_ol: fmlna@2 {
-		pins_cmd_dat {
-			pins = <PINMUX_GPIO28__FUNC_GPIO28>;
-			slew-rate = <1>;
-			output-low;
-		};
-	};
 };
 &consys {
-	pinctrl-names = "default", "gps_lna_state_init", "gps_lna_state_oh", "gps_lna_state_ol","fm_lna_state_init", "fm_lna_state_oh", "fm_lna_state_ol";
+	pinctrl-names = "default", "gps_lna_state_init", "gps_lna_state_oh", "gps_lna_state_ol";
 	pinctrl-0 = <&consys_pins_default>;
 	pinctrl-1 = <&gpslna_pins_init>;
 	pinctrl-2 = <&gpslna_pins_oh>;
 	pinctrl-3 = <&gpslna_pins_ol>;
-	 pinctrl-4 = <&fmlna_pins_init>;
-        pinctrl-5 = <&fmlna_pins_oh>;
-        pinctrl-6 = <&fmlna_pins_ol>;
 	status = "okay";
 };
 /* CONSYS end */
@@ -570,28 +562,28 @@
 	};
 	camera_pins_cam_ldo_rear_vcamd_0: cam0@vcamd0 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO21__FUNC_GPIO21>;
+			pins = <PINMUX_GPIO163__FUNC_GPIO163>;
 			slew-rate = <1>;
 			output-low;
 		};
 	};
 	camera_pins_cam_ldo_rear_vcamd_1: cam0@vcamd1 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO21__FUNC_GPIO21>;
+			pins = <PINMUX_GPIO163__FUNC_GPIO163>;
 			slew-rate = <1>;
 			output-high;
 		};
 	};
 	camera_pins_cam_ldo_rear_vcama_0: cam0@vcama0 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO20__FUNC_GPIO20>;
+			pins = <PINMUX_GPIO163__FUNC_GPIO163>;
 			slew-rate = <1>;
 			output-low;
 		};
 	};
 	camera_pins_cam_ldo_rear_vcama_1: cam0@vcama1 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO20__FUNC_GPIO20>;
+			pins = <PINMUX_GPIO163__FUNC_GPIO163>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -612,28 +604,28 @@
 	};
 	camera_pins_cam_ldo_sub_vcama_0: cam1@vcama0 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO79__FUNC_GPIO79>;
+			pins = <PINMUX_GPIO163__FUNC_GPIO163>;
 			slew-rate = <1>;
 			output-low;
 		};
 	};
 	camera_pins_cam_ldo_sub_vcama_1: cam1@vcama1 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO79__FUNC_GPIO79>;
+			pins = <PINMUX_GPIO163__FUNC_GPIO163>;
 			slew-rate = <1>;
 			output-high;
 		};
 	};
 	camera_pins_cam_ldo_rear2_vcama_0: cam2@vcama0 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO94__FUNC_GPIO94>;
+			pins = <PINMUX_GPIO163__FUNC_GPIO163>;
 			slew-rate = <1>;
 			output-low;
 		};
 	};
 	camera_pins_cam_ldo_rear2_vcama_1: cam2@vcama1 {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO94__FUNC_GPIO94>;
+			pins = <PINMUX_GPIO163__FUNC_GPIO163>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -737,26 +729,34 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 	fingerprint: fingerprint@spi0{
-		compatible = "focaltech,fingerprint-spidev";
+		compatible = "prize,fingerprint";
 		reg = <0>;
 		spi-max-frequency = <1000000>;
+		/*other infromation*/
+		/*spi-cpha;*/    /*set cpha=1, optional*/
+		/*spi-cpol;*/    /*set cpol=1, optional*/
+		/*spi-cs-high;*/    /*set cs active level=1, optional*/
+		/*spi-3wire;*/    /*set no-tx or no-rx, optional*/
+		/*spi-lsb-first;*/    /*set lsb-first transfer, optional*/
+		fingerprint,touch-int-gpio = <&pio 8 0>;
 		status = "okay";
 	};
 };
-&fpc {
 
+&fpc {
+	//interrupt-parent = <&pio>;
+	//fingerprint,touch-int_num = <8>;
+	//fingerprint,touch-int-gpio = <&pio 8 0>;
 	interrupt-parent = <&eintc>;
 	interrupts = <8 IRQ_TYPE_EDGE_FALLING 8 0>;	
 	pinctrl-names = "default",
 		"fpc_eint_as_int",
-		"fpc_pins_rst_high", 
-		"fpc_pins_rst_low",
-		"fpc_pins_pwr_high", 
-		"fpc_pins_pwr_low",
-		"fpc_mode_as_cs", 
-		"fpc_mode_as_ck",
-		"fpc_mode_as_mi", 
-		"fpc_mode_as_mo";
+		"fpc_pins_rst_high", "fpc_pins_rst_low",
+		"fpc_pins_pwr_high", "fpc_pins_pwr_low",
+		"fpc_mode_as_cs", "fpc_mode_as_ck",
+		"fpc_mode_as_mi", "fpc_mode_as_mo",
+		"fpc_miso_pull_up", "fpc_miso_pull_down",
+		"fpc_mosi_pull_up", "fpc_mosi_pull_down";
 	pinctrl-0 = <&fpc_pins_default>;
 	pinctrl-1 = <&fpc_pins_eint_as_int>;
 	pinctrl-2 = <&fpc_pins_rst_high>;
@@ -767,6 +767,10 @@
 	pinctrl-7 = <&fpc_mode_as_ck>;
 	pinctrl-8= <&fpc_mode_as_mi>;
 	pinctrl-9 = <&fpc_mode_as_mo>;
+	pinctrl-10 = <&fpc_miso_pull_up>;
+	pinctrl-11 = <&fpc_miso_pull_down>;
+	pinctrl-12 = <&fpc_mosi_pull_up>;
+	pinctrl-13 = <&fpc_mosi_pull_down>;
 	status = "okay";
 };
 
@@ -831,6 +835,34 @@
 		pins_cmd_dat {
 			pinmux = <PINMUX_GPIO87__FUNC_SPI0_MO>;
 			bias-pull-down = <00>;
+		};
+	};
+	fpc_miso_pull_up: fpcmisoup {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO85__FUNC_GPIO85>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+	fpc_miso_pull_down: fpcmisolow {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO85__FUNC_GPIO85>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+	fpc_mosi_pull_up: fpcmosiup {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO87__FUNC_GPIO87>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+	fpc_mosi_pull_down: fpcmosilow {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO87__FUNC_GPIO87>;
+			slew-rate = <1>;
+			output-low;
 		};
 	};
 };
@@ -981,7 +1013,7 @@
 
 	aud_pins_extamp_pullhigh: aud_pins_extamp_pullhigh {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO19__FUNC_GPIO19>;
+			pinmux = <PINMUX_GPIO19__FUNC_GPIO19>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -989,7 +1021,7 @@
 
 	aud_pins_extamp_pulllow: aud_pins_extamp_pulllow {
 		pins_cmd_dat {
-			pins = <PINMUX_GPIO19__FUNC_GPIO19>;
+			pinmux = <PINMUX_GPIO19__FUNC_GPIO19>;
 			slew-rate = <1>;
 			output-low;
 		};
@@ -1009,6 +1041,7 @@
 	rt5081pd,intr_gpio = <&pio 41 0x0>;
 };
 #endif
+
 #ifdef CONFIG_MFD_MT6370_PMU
 &mt6370_pmu {
 	mt6370,intr_gpio_num = <91>; /* direct defined GPIO num */
@@ -1055,11 +1088,12 @@
 #ifdef CONFIG_CHARGER_RT9465
 &charger {
 	algorithm_name = "DualSwitchCharging";
-	chg1_ta_ac_charger_current = <1200000>; /* prize-sunshuai modify 20190803 master charge current to  1.2A */
+	chg1_ta_ac_charger_current = <1200000>; /* prize modify by sunshuai modify 20190717 master charge current to  1.2A */
 	chg2_ta_ac_charger_current = <1200000>;
 };
 #endif
 /* prize-wyq 20190411-add dual switch charge node for rt9465-end */
+
 #ifdef CONFIG_TCPC_MT6370
 &mt6370_typec {
 	mt6370pd,intr_gpio_num = <41>; /* direct defined GPIO num */
@@ -1080,27 +1114,30 @@
 	status = "okay";
 };
 
+
 /* begin, prize-lifenfen-20190103, add for wireless power receiver mt5715 */
 &i2c3 {
         MT5715_receiver@56 {
             compatible = "MT5715_receiver";
             reg = <0x56>;
             irq-gpio = <&pio 10 0>;//W_CHARGE_INT
-            dc-gpio = <&pio 22 0>;//DC_EN
+            dc-gpio = <&pio 16 0>;//DC_EN
             status = "okay";
           };
 };
 /* end, prize-lifenfen-20190103, add for wireless power receiver mt5715 */
+
 /*zhengjiang.zhu@Koobee.Camera.Driver  2018/11/2  add for prize double camera gc6133*/
 &i2c4 {
 	spc@40 {
 		compatible = "prize,dcam_r";
-		reg = <0x3c>;
+		reg = <0x40>;
 		pdn_pin = <&pio 54 0>;
 		rst_pin = <&pio 78 0>;
 		sensor_type = <6133>;	/*DO NOT write 0310*/
 	};
 };
 /*zhengjiang.zhu@Koobee.Camera.Driver  2018/11/2  end for prize double camera gc6133*/
+
 #include <k63v2_64_bsp/cust.dtsi>
 /*End of this file, DO NOT ADD ANYTHING HERE*/

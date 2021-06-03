@@ -125,7 +125,7 @@
  * show debug log info
  * enable it for debug, disable it for release
  */
-#define FTS_DEBUG_EN                            1
+#define FTS_DEBUG_EN                        0
 
 /*
  * Linux MultiTouch Protocol
@@ -161,11 +161,7 @@
  * Glove mode enable
  * 1: enable, 0:disable(default)
  */
-#if defined(CONFIG_PRIZE_SMART_COVER_COMMON_NODE)
-#define FTS_GLOVE_EN                            1
-#else
 #define FTS_GLOVE_EN                            0
-#endif
 /*
  * cover enable
  * 1: enable, 0:disable(default)
@@ -193,7 +189,7 @@
  * enable it when customer need control TP power
  * default: disable
  */
-#define FTS_POWER_SOURCE_CUST_EN                0
+#define FTS_POWER_SOURCE_CUST_EN                1
 
 /****************************************************/
 
@@ -201,7 +197,7 @@
 /*
  * auto upgrade, please keep enable
  */
-#define FTS_AUTO_UPGRADE_EN                     0
+#define FTS_AUTO_UPGRADE_EN                     1//1
 
 /*
  * auto upgrade for lcd cfg
@@ -234,7 +230,7 @@
  * define your own fw_file, the sample one to be replaced is invalid
  * NOTE: if FTS_GET_VENDOR_ID_NUM > 1, it's the fw corresponding with FTS_VENDOR_ID
  */
-#define FTS_UPGRADE_FW_FILE                      "include/firmware/FT5446_HLT_KB_K607(CCF11309)_V10_D01_20190325_app.i"
+#define FTS_UPGRADE_FW_FILE                      "include/firmware/FT5446_HLT_K605_Ver0x25_20190716_app.i"
 
 /*
  * if FTS_GET_VENDOR_ID_NUM >= 2, fw corrsponding with FTS_VENDOR_ID2

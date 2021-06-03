@@ -1564,32 +1564,6 @@ void mtk_charger_stop_timer(struct charger_manager *info)
 	if (IS_ENABLED(USE_FG_TIMER))
 		gtimer_stop(&info->charger_kthread_fgtimer);
 }
-static int cmd_soc = 0;
-static int cmd_soc_enable = 0;
-
-void accord_soc_percentage_stop_charger(struct charger_manager *info)
-{
-	if(cmd_soc_enable == 1)
-	{
-		if(cmd_soc == g_cw2015_capacity)
-		{
-			info->cmd_discharging = true;
-
-			charger_dev_enable(info->chg1_dev, false);
-			charger_dev_enable(info->chg2_dev, false);
-			charger_manager_notifier(info, CHARGER_NOTIFY_STOP_CHARGING);
-		}
-			
-	}
-	else if(cmd_soc_enable == 2)
-	{
-		info->cmd_discharging = false;
-		charger_dev_enable(info->chg1_dev, true);
-		charger_dev_enable(info->chg2_dev, true);
-		charger_manager_notifier(info, CHARGER_NOTIFY_START_CHARGING);
-		cmd_soc_enable = 0;
-	}
-}
 
 static int charger_routine_thread(void *arg)
 {
@@ -1638,8 +1612,6 @@ static int charger_routine_thread(void *arg)
 			}
 		} else
 			chr_debug("disable charging\n");
-		
-		accord_soc_percentage_stop_charger(info);
 
 		spin_lock_irqsave(&info->slock, flags);
 		wake_unlock(&info->charger_wakelock);
@@ -2436,7 +2408,7 @@ static int mtk_charger_current_cmd_show(struct seq_file *m, void *data)
 {
 	struct charger_manager *pinfo = m->private;
 
-	seq_printf(m, "%d %d %d %d\n", pinfo->usb_unlimited, pinfo->cmd_discharging,cmd_soc,cmd_soc_enable);
+	seq_printf(m, "%d %d\n", pinfo->usb_unlimited, pinfo->cmd_discharging);
 	return 0;
 }
 
@@ -2455,7 +2427,7 @@ static ssize_t mtk_charger_current_cmd_write(struct file *file, const char *buff
 
 	desc[len] = '\0';
 
-	if (sscanf(desc, "%d %d %d %d", &cmd_current_unlimited, &cmd_discharging, &cmd_soc, &cmd_soc_enable) == 4) {
+	if (sscanf(desc, "%d %d", &cmd_current_unlimited, &cmd_discharging) == 2) {
 		info->usb_unlimited = cmd_current_unlimited;
 		if (cmd_discharging == 1) {
 			info->cmd_discharging = true;

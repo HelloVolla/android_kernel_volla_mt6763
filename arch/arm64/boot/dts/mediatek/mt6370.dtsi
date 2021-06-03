@@ -115,7 +115,7 @@
 			mt,bled_ramptime = <3>; /* 0, 500us, 750us, 1ms, 2ms, 5ms, 10ms, 20ms */
 						/* 50ms, 100ms, 250ms, 800ms, 1s, 2s, 4s, 8s */
 			mt,bled_flash_ramp = <1>; /* 0, 500us, 750us, 1ms, 2ms, 5ms */
-			mt,max_bled_brightness = <680>; /* we have 11 bit resolution, quantize in driver */
+			mt,max_bled_brightness = <700>; /* we have 11 bit resolution, quantize in driver */
 							 /* maximum 2047 */
 		};
 		dsv {

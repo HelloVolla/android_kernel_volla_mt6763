@@ -1882,6 +1882,11 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 	g_sensor: g_sensor {
 		compatible = "mediatek,g_sensor";
 	};
+
+	m_sensor: m_sensor {
+		compatible = "mediatek,m_sensor";
+	};
+
 	mse: mse {
 		compatible = "mediatek,fix_build_error";
 	};
@@ -3780,7 +3785,7 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 		enable_pe_3;
 
 		/* common */
-		battery_cv = <4400000>;
+		battery_cv = <4410000>;
 /*start prize-sunshuai-20190123, modify for NE6153  */
 #if defined(CONFIG_PRIZE_NE6153_SUPPORT) || defined(CONFIG_PRIZE_WIRELESS_RECEIVER_MAXIC_MT5715)
 		max_charger_voltage = <9500000>;
@@ -3788,17 +3793,15 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 		max_charger_voltage = <6500000>;
 #endif
 /*end prize-sunshuai-20190123, modify for NE6153  */
-		/*prize-Solving the problem of low charging current of 5V-pengzhipeng-20190903-start */
-		min_charger_voltage = <4400000>;
-		/*prize-Solving the problem of low charging current of 5V-pengzhipeng-20190903-end */
+		min_charger_voltage = <4400000>; /*prize-sunshuai-20190910, modify for Compatible with 5V/1A  or 5V/2A third part Non-fast charger  */
 
 		/* charging current */
 		usb_charger_current_suspend = <0>;
 		usb_charger_current_unconfigured = <70000>;
 		usb_charger_current_configured = <500000>;
 		usb_charger_current = <500000>;
-		ac_charger_current = <2000000>;
-		ac_charger_input_current = <2000000>;
+		ac_charger_current = <1650000>;
+		ac_charger_input_current = <1650000>;
 		non_std_ac_charger_current = <500000>;
 		charging_host_charger_current = <1500000>;
 		apple_1_0a_charger_current = <650000>;
@@ -3837,8 +3840,8 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 		ta_stop_battery_soc = <85>;
 
 		/* dual charger */
-		chg1_ta_ac_charger_current = <1500000>;
-		chg2_ta_ac_charger_current = <1500000>;
+		chg1_ta_ac_charger_current = <1200000>;
+		chg2_ta_ac_charger_current = <1200000>;
 
 		/* cable measurement impedance */
 		cable_imp_threshold = <699>;
@@ -3854,6 +3857,15 @@ firmware_class.path=/vendor/firmware loop.max_part=7";
 		MT5715_wlc_cur_step_input = <0 100000 500000 500000 800000 1000000 1000000 1100000>;
 		MT5715_wlc_cur_step_output = <0 0 300000 500000 800000 1000000 1500000 2000000>;
 #endif		
+/*prize-add by sunshuai for German customer gigast requires charging to be controlled according to the battery specification 20190617 start  */
+#if defined(CONFIG_PRIZE_CHARGE_CTRL_GIGAST)
+		start_step1_temp = <(-5)>;
+		start_step2_temp = <15>;
+		start_step3_temp = <45>;
+		exit_step3_temp = <40>;
+		end_step3_temp = <60>;
+#endif
+/*prize-add by sunshuai for German customer gigast requires charging to be controlled according to the battery specification 20190617 end  */
 	};
 
 	sim2_hot_plug: sim2_hot_plug {
