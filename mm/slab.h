@@ -263,7 +263,11 @@ static inline bool is_root_cache(struct kmem_cache *s)
 static inline bool slab_equal_or_root(struct kmem_cache *s,
 				      struct kmem_cache *p)
 {
+#ifdef CONFIG_SLAB_HARDENED
+	return p == s;
+#else
 	return true;
+#endif
 }
 
 static inline const char *cache_name(struct kmem_cache *s)
@@ -305,17 +309,25 @@ static inline struct kmem_cache *cache_from_obj(struct kmem_cache *s, void *x)
 	 * to not do even the assignment. In that case, slab_equal_or_root
 	 * will also be a constant.
 	 */
-	if (!memcg_kmem_enabled() && !unlikely(s->flags & SLAB_DEBUG_FREE))
+	if (!IS_ENABLED(CONFIG_SLAB_HARDENED) &&
+	    !memcg_kmem_enabled() && !unlikely(s->flags & SLAB_DEBUG_FREE))
 		return s;
 
 	page = virt_to_head_page(x);
+#ifdef CONFIG_SLAB_HARDENED
+	BUG_ON(!PageSlab(page));
+#endif
 	cachep = page->slab_cache;
 	if (slab_equal_or_root(cachep, s))
 		return cachep;
 
 	pr_err("%s: Wrong slab cache. %s but object is from %s\n",
 	       __func__, s->name, cachep->name);
+#ifdef CONFIG_PANIC_ON_DATA_CORRUPTION
+	BUG_ON(1);
+#else
 	WARN_ON_ONCE(1);
+#endif
 	return s;
 }
 
