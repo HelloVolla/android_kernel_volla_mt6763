@@ -1,0 +1,25 @@
+
+config CUSTOM_KERNEL_SENSORHUB
+	bool "CUSTOM KERNEL SENSORHUB support"
+	help
+	  Kernel space sensor hub driver.
+	  Define project used all sensor hub
+	  sensors. The value is combination of sensor hub driver(get data...etc)
+	  and sensor hub framework driver(transmit shf info)
+
+# begin, prize-lifenfen-20181126, add for sensorhub hardware info
+config SENSORHUB_PRIZE_HARDWARE_INFO
+	depends on CUSTOM_KERNEL_SENSORHUB
+        bool "SENSORHUB PRIZE HARDWARE INFO support"
+        help
+          Kernel space sensor hub driver hardware info.
+
+config SENSORHUB_PRIZE_HARDWARE_INFO_SIZE
+        depends on SENSORHUB_PRIZE_HARDWARE_INFO
+        bool "SENSORHUB PRIZE HARDWARE INFO SIZE support"
+        help
+          Kernel space sensor hub driver hardware info size.
+# end, prize-lifenfen-20181126, add for sensorhub hardware info
+#source "drivers/misc/mediatek/sensors-1.0/sensorHub/SCP_sensorHub/Kconfig"
+#source "drivers/misc/mediatek/sensors-1.0/sensorHub/SCP_sensorHub_v1/Kconfig"
+#source "drivers/misc/mediatek/sensors-1.0/sensorHub/SCP_shf/Kconfig"

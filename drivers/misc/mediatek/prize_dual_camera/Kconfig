@@ -1,0 +1,20 @@
+
+config PRIZE_DUAL_CAMERA_ENABLE
+	bool "Support prize_dual_camera function"
+	default n
+	help
+		 Select Y to enable prize_dual_camera function
+		 
+config PRIZE_DUAL_CAMERA_ENABLE_REAR
+	bool "Support prize_dual_camera rear function"
+	default n
+	select PRIZE_DUAL_CAMERA_ENABLE
+	help
+		Select Y to enable prize_dual_camera function
+		 
+config PRIZE_DUAL_CAMERA_ENABLE_FRONT
+	bool "Support prize_dual_camera front function"
+	default n
+	select PRIZE_DUAL_CAMERA_ENABLE
+	help
+		Select Y to enable prize_dual_camera function

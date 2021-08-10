@@ -1,0 +1,8 @@
+config MTK_ICM426XX_A
+        bool "ICM426XX for MediaTek package"
+        default n
+        help
+        It support different accelerometer sensor.
+        If this option is set,
+            it will support
+            ICM426XX accelerometer.

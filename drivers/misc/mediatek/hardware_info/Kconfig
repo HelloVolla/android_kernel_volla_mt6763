@@ -1,0 +1,22 @@
+config PRIZE_HARDWARE_INFO
+  bool "HARDWARE_INFO"
+  default y
+  help
+    Dummy Lens Driver
+    This config is used to enable the corresponding
+    lens driver for the camera sensor module
+    Set as y if the driver is used in this project
+
+config PRIZE_HARDWARE_INFO_BAT
+  bool "PRIZE_HARDWARE_INFO_BAT"
+  depends on PRIZE_HARDWARE_INFO
+  default n
+  help
+    This config is used to enable battery info
+	displayed in hardware info.
+	
+config PRIZE_CTS
+  bool "HARDWARE_EFUSE_INFO"
+  default n
+  help
+    Dummy EFUSE flown status info

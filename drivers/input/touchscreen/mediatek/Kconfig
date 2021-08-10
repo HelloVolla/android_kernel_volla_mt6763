@@ -1,0 +1,251 @@
+#
+# Touchscreen driver configuration
+#
+menuconfig INPUT_TOUCHSCREEN
+	bool "Touchscreens"
+	help
+	  Say Y here, and a list of supported touchscreens will be displayed.
+	  This option doesn't affect the kernel.
+
+	  If unsure, say Y.
+
+if INPUT_TOUCHSCREEN
+
+config TOUCHSCREEN_MTK
+	bool "MediaTek Touch Panel Driver"
+	help
+	  Say Y here if you have MediaTek touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+config TOUCHSCREEN_PHYSICAL_ROTATION_WITH_LCM
+	bool "MediaTek Touch Panel Rotation With LCM"
+	default y
+	help
+	  Say N here if touch panel is not physical rotated as LCM does.
+	  Physically rotated means that this driver will map
+	  the reported coordination to diagonal position.
+
+	  If unsure, say Y.
+config TOUCHSCREEN_MTK_SOLOMON
+	bool "SOLOMON for Mediatek package"
+	default n
+	help
+	  Say Y here if you have SOLOMON touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/mediatek/SOLOMON/Kconfig"
+
+config TOUCHSCREEN_MTK_FOCALTECH_TS
+	bool "FOCALTECH_TS for Mediatek package"
+	default n
+	help
+	  Say Y here if you have focaltech_touch touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/mediatek/focaltech_touch/Kconfig"
+config TOUCHSCREEN_MTK_GT1151
+	bool "GT1151 for Mediatek package"
+	default n
+	help
+	  Say Y here if you have GT1151 touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/mediatek/GT1151/Kconfig"
+
+#prize-add-hx83102-pengzhipeng-20200304-start
+config TOUCHSCREEN_HIMAX_CHIPSET
+         bool "hx83102 for Mediatek package"
+         default n
+         help
+           Say Y here if you have hx83102 touch panel.
+
+           If unsure, say N.
+
+         help
+           Say Y here if you have hx83102 touch panel.
+
+           If unsure, say N.
+
+           To compile this dirver as a module, choose M here: the
+           module will be called.
+
+source "drivers/input/touchscreen/mediatek/hxchipset/Kconfig"
+#prize-add-hx83102-pengzhipeng-20200304-end
+
+
+config TOUCHSCREEN_MTK_NT36xxx
+	bool "NT36xxx for Mediatek package"
+	default n
+	help
+	  Say Y here if you have NT36xxx touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/mediatek/NT36xxx/Kconfig"
+
+
+config TOUCHSCREEN_MTK_NT36572_COMMON
+         bool "NT36572 for Mediatek package"
+         default n
+         help
+           Say Y here if you have NT36572 touch panel.
+
+           If unsure, say N.
+
+         help
+           Say Y here if you have NT36572 touch panel.
+
+           If unsure, say N.
+
+           To compile this dirver as a module, choose M here: the
+           module will be called.
+
+source "drivers/input/touchscreen/mediatek/nt36572_common/Kconfig"
+
+#prize-add HX83112-pengguangyi-20190119-start
+
+config TOUCHSCREEN_MTK_HX83112
+	bool "HX83112 for Mediatek package"
+	default n
+	help
+	  Say Y here if you have HX83112 touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/mediatek/HX83112/Kconfig"
+
+#prize-add HX83112-pengguangyi-20190119-end
+
+config TOUCHSCREEN_MTK_FOCALTECH_HD
+	bool "Focaltech Touchscreen"
+	depends on I2C
+	help
+	  Say Y here if you have Focaltech touch panel.
+	  If unsure, say N.
+#prize-add-pengzhipeng-20191029-start
+config TOUCHSCREEN_MTK_FOCALTECH_TS_V3
+	bool "FT8006 for Mediatek package"
+	default n
+	help
+	  Say Y here if you have FT8006 touch panel.
+	  If unsure, say N.
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+#prize-add-pengzhipeng-20191029-end
+
+#prize-add-pengzhipeng-20191029-start
+config TOUCHSCREEN_MTK_FOCALTECH_TS_V4
+	bool "FT8006 for Mediatek package"
+	default n
+	help
+	  Say Y here if you have FT8006 touch panel.
+	  If unsure, say N.
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+#prize-add-pengzhipeng-20191029-end
+
+config TOUCHSCREEN_MTK_FOCALTECH_FHD
+	bool "Focaltech FHD Touchscreen"
+	depends on I2C
+	help
+	  Say Y here if you have Focaltech touch panel.
+	  If unsure, say N.
+#prize-add-lishuwen-20191226-start
+config TOUCHSCREEN_MTK_GT1X_V14
+	bool "GT1X_V14 for Mediatek package"
+	default n
+	help
+	  Say Y here if you have GT1X_V14 touch panel.
+	  If unsure, say N.
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+config TOUCHSCREEN_MTK_GT9XX_PRIZE
+	bool "GT9XX for Mediatek package"
+	default n
+	help
+	  Say Y here if you have GT9XX touch panel.
+	  If unsure, say N.
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.	  
+source "drivers/input/touchscreen/mediatek/GT9XX_prize/Kconfig"
+#prize-add-lishuwen-20191226-end
+#prize-add-pengzhipeng-20200114-start
+config TP_BEFORE_LCM_RESUME
+    bool "TP_BEFORE_LCM_RESUME"
+	default n
+	help
+	  Say Y here if you have touch panel.
+	  Since the touch panel initialization is not completely completed at the moment of the bright screen,you need to put the touch panel before the screen wakes up.	
+#prize-add-pengzhipeng-20200114-end
+
+#diliwu add tp 20191222 start
+config TOUCHSCREEN_CHIPONE
+        tristate "Chipone TDDI touchscreen for Mediatek package"
+        depends on I2C
+        default n
+        help
+          Say y here if you have chipone TDDI touch panel.
+          If unsure, say N.
+          To compile this driver as a module, choose M here: the
+          module will be called chipone-tddi.
+#diliwu add tp 20191222 end
+#prize Added glove mode control macro-yaozhipeng-20190718-start	  
+config PRIZE_SMART_COVER_COMMON_NODE
+	bool "prize smart cover common node"
+	default n
+	help
+	  Say Y here if you use smart cover common node.
+	  If unsure, say N.
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+#prize Added glove mode control macro-yaozhipeng-20190718-end*/
+#prize-add-hx83102spi-yangcong-20201010-start
+config TOUCHSCREEN_HIMAX_CHIPSET_SPI
+         bool "hx83102spi for Mediatek package"
+         default n
+         help
+           Say Y here if you have hx83102 touch panel.
+
+           If unsure, say N.
+
+         help
+           Say Y here if you have hx83102 touch panel.
+
+           If unsure, say N.
+
+           To compile this dirver as a module, choose M here: the
+           module will be called.
+
+source "drivers/input/touchscreen/mediatek/hxchipset_spi/Kconfig"
+#prize-add-hx83102spi-yangcong-20201010-end
+
+#prize-add-ili9882spi-zhaopengge-20201210-start
+config TOUCHSCREEN_MTK_ILI9882N
+	bool "TOUCHSCREEN_MTK_ILI9882N"
+	default n
+	help
+		ILI9881 driver
+#prize-add-ili9882spi-zhaopengge-20201210-end
+endif

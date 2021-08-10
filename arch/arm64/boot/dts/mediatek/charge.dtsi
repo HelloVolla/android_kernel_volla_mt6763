@@ -1,0 +1,73 @@
+&charger {
+	algorithm_name = "DualSwitchCharging";
+	chg1_ta_ac_charger_current = <1200000>; /* prize modify by sunshuai modify 20190717 master charge current to  1.2A */
+	chg2_ta_ac_charger_current = <1200000>;
+	
+	battery_cv = <4250000>;
+	
+/*start prize-sunshuai-20190123, modify for NE6153  */
+#if defined(CONFIG_PRIZE_NE6153_SUPPORT) || defined(CONFIG_PRIZE_WIRELESS_RECEIVER_MAXIC_MT5715)
+	max_charger_voltage = <9500000>;
+#else
+	max_charger_voltage = <6500000>;
+#endif
+/*end prize-sunshuai-20190123, modify for NE6153  */
+	min_charger_voltage = <4400000>; /*prize-sunshuai-20190910, modify for Compatible with 5V/1A  or 5V/2A third part Non-fast charger  */
+	
+    min_charge_temp = <(-5)>;
+	min_charge_temp_plus_x_degree = <0>;
+    max_charge_temp = <55>;
+    max_charge_temp_minus_x_degree = <50>;
+	
+#if defined(CONFIG_PRIZE_WIRELESS_RECEIVER_MAXIC_MT5715)
+	MT5715_wlc_cur_step_num = <8>;
+	MT5715_wlc_cur_step_input = <0 100000 500000 500000 800000 1000000 1000000 1100000>;
+	MT5715_wlc_cur_step_output = <0 0 300000 500000 800000 1000000 1500000 2000000>;
+#endif
+
+/*prize-add by sunshuai for German customer gigast requires charging to be controlled according to the battery specification 20190617 start  */
+#if defined(CONFIG_PRIZE_CHARGE_CTRL_GIGAST)
+	start_step1_temp = <(-5)>;
+	start_step2_temp = <15>;
+	start_step3_temp = <45>;
+	exit_step3_temp = <40>;
+	end_step3_temp = <60>;
+#endif
+/*prize-add by sunshuai for German customer gigast requires charging to be controlled according to the battery specification 20190617 end  */
+};
+
+/* begin, prize-lifenfen-20190103, add for wireless power receiver mt5715 */
+&i2c3 {
+        MT5715_receiver@56 {
+            compatible = "MT5715_receiver";
+            reg = <0x56>;
+            irq-gpio = <&pio 10 0>;//W_CHARGE_INT
+            dc-gpio = <&pio 16 0>;//DC_EN
+		    pinctrl-names = "default", "charger_otg_off", "charger_otg_on";
+		    pinctrl-0 = <&charger_otg_pins_default>;
+		    pinctrl-1 = <&charger_otg_pin_en0>;
+		    pinctrl-2 = <&charger_otg_pin_en1>;
+            status = "okay";
+          };
+};
+/* end, prize-lifenfen-20190103, add for wireless power receiver mt5715 */
+
+&pio {
+        charger_otg_pins_default: charger_otg_default {
+        };
+
+        charger_otg_pin_en0:  charger_otg_en@0 {
+            pins_cmd_dat {
+                        pinmux = <PINMUX_GPIO14__FUNC_GPIO14>;
+                        slew-rate = <1>;
+                        output-low;
+                };
+        };
+        charger_otg_pin_en1:  charger_otg_en@1 {
+            pins_cmd_dat {
+                        pinmux = <PINMUX_GPIO14__FUNC_GPIO14>;
+                        slew-rate = <1>;
+                        output-high;
+                };
+        };
+};

@@ -1,0 +1,7 @@
+config PRIZE_AW9203
+	bool "PRIZE AW9203"
+	default n
+	help
+		prize AW9203 driver
+
+

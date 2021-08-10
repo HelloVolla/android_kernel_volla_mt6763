@@ -1,0 +1,74 @@
+ menuconfig MEDIATEK_BATTERY_SOLUTION
+	bool "MediaTek Propritary Configuration for Battery"
+	help
+	  Check this to enable MediaTek Battery configuration.
+
+config MTK_SMART_BATTERY
+	bool "MediaTek Smart Battery Driver"
+	help
+	  Check this to enable MediaTek smart battery driver.
+	  The driver supports charging control flow.
+	  It maintais both charger and battery status.
+	  It also includes Mediatek gas gauge.
+
+config MTK_GAUGE_VERSION
+	int "MediaTek Fuel Gauge version"
+	default 20
+	help
+	  Select MTK Gauge Master version
+	  30: Gauge Master 3.0
+# prize-add-pengzhipeng-20191104-start
+config MTK_CW2015_SUPPORT
+	bool "Charger Driver for CW2015 fg"
+	default n
+	help
+	  Say Y to enable
+	  CW2015 driver.
+	  It depends on config MTK_SMART_BATTERY
+	  and config MTK_SWCHR_SUPPORT.
+# prize-add-pengzhipeng-20191104-start
+config MTK_DISABLE_GAUGE
+	bool "disable Gauge Master 3.0"
+	default n
+	help
+	  Set Yes to disable Gauge Master 3.0
+	  under new MTK Charger Framework
+	  Set No to enable Gauge Master 3.0
+	  under new MTK Charger Framework
+
+config MTK_ADDITIONAL_BATTERY_TABLE
+	bool "Enable the fifth battery table"
+	default y
+	help
+	  Set Yes to enable the fifth battery table
+	  Table number is five.
+	  Set No to disable the fifth battery table
+	  Table number is four.
+#prize added by huarui, cw2015 support, 20190612-start
+config MTK_CW2015_SUPPORT_OF
+	bool "Charger Driver for CW2015 fg"
+	default n
+	select MTK_CW2015_SUPPORT
+	help
+	  Say Y to enable CW2015 driver.
+#prize added by huarui, cw2015 support, 20190612-end
+
+# prize-add-sunshuai-2015 Multi-Battery Solution-20200222-start
+config MTK_CW2015_BATTERY_ID_AUXADC
+	bool "2015 fuel gauge compatible with multiple batteries"
+	default n
+	help
+	  Say Y to enable
+	  Enable 2015 Multi-Battery Solution.
+	  It depends on config MTK_CW2015_SUPPORT
+	  and config MTK_CW2015_SUPPORT_OF.
+
+config MTK_CW2015_BATTERY_5000MA
+	bool "2015 fuel gauge compatible with use 5000MA"
+	default n
+	help
+	  Say Y to enable
+	  Enable 2015 Multi-Battery Solution.
+	  It depends on config MTK_CW2015_SUPPORT
+	  and config MTK_CW2015_SUPPORT_OF.
+# prize-add-sunshuai-2015 Multi-Battery Solution-20200222-end
