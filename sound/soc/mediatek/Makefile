@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 #
 subdir-ccflags-y += -Werror
+subdir-ccflags-y += -D__linux__
 
 # dsp related code
 obj-$(CONFIG_MTK_AUDIODSP_SUPPORT) += audio_dsp/
