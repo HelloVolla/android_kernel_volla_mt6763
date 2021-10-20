@@ -3082,10 +3082,30 @@ static bool rb_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer)
 	if (unlikely(!head))
 		return true;
 
-	return reader->read == rb_page_commit(reader) &&
-		(commit == reader ||
-		 (commit == head &&
-		  head->read == rb_page_commit(commit)));
+	/* Reader should exhaust content in reader page */
+	if (reader->read != rb_page_commit(reader))
+		return false;
+
+	/*
+	 * If writers are committing on the reader page, knowing all
+	 * committed content has been read, the ring buffer is empty.
+	 */
+	if (commit == reader)
+		return true;
+
+	/*
+	 * If writers are committing on a page other than reader page
+	 * and head page, there should always be content to read.
+	 */
+	if (commit != head)
+		return false;
+
+	/*
+	 * Writers are committing on the head page, we just need
+	 * to care about there're committed data, and the reader will
+	 * swap reader page with head page when it is to read data.
+	 */
+	return rb_page_commit(commit) == 0;
 }
 
 /**
@@ -3171,6 +3191,22 @@ EXPORT_SYMBOL_GPL(ring_buffer_record_on);
 int ring_buffer_record_is_on(struct ring_buffer *buffer)
 {
 	return !atomic_read(&buffer->record_disabled);
+}
+
+/**
+ * ring_buffer_record_is_set_on - return true if the ring buffer is set writable
+ * @buffer: The ring buffer to see if write is set enabled
+ *
+ * Returns true if the ring buffer is set writable by ring_buffer_record_on().
+ * Note that this does NOT mean it is in a writable state.
+ *
+ * It may return true when the ring buffer has been disabled by
+ * ring_buffer_record_disable(), as that is a temporary disabling of
+ * the ring buffer.
+ */
+int ring_buffer_record_is_set_on(struct ring_buffer *buffer)
+{
+	return !(atomic_read(&buffer->record_disabled) & RB_BUFFER_OFF);
 }
 
 /**
@@ -4273,6 +4309,8 @@ void ring_buffer_reset_cpu(struct ring_buffer *buffer, int cpu)
 
 	if (!cpumask_test_cpu(cpu, buffer->cpumask))
 		return;
+	/* prevent another thread from changing buffer sizes */
+	mutex_lock(&buffer->mutex);
 
 	atomic_inc(&buffer->resize_disabled);
 	atomic_inc(&cpu_buffer->record_disabled);
@@ -4296,6 +4334,8 @@ void ring_buffer_reset_cpu(struct ring_buffer *buffer, int cpu)
 
 	atomic_dec(&cpu_buffer->record_disabled);
 	atomic_dec(&buffer->resize_disabled);
+
+	mutex_unlock(&buffer->mutex);
 }
 EXPORT_SYMBOL_GPL(ring_buffer_reset_cpu);
 
