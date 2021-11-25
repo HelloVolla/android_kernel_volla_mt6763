@@ -1,5 +1,3 @@
-subdir-ccflags-y += -Werror
-
 mediatek-drm-y := mtk_disp_color.o \
 		  mtk_disp_ovl.o \
 		  mtk_disp_rdma.o \
