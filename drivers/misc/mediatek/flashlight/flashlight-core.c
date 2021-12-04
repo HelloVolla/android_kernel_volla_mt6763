@@ -70,6 +70,7 @@ static int pt_is_low(int pt_low_vol, int pt_low_bat, int pt_over_cur);
 /*zhengjiang.zhu@prize.Camera.Driver  2018/11/13  add for flashlight node:flashlight_torch*/
 //#define FLASHLIGHT_CHANNEL1_TORCH_DUTY       6
 //#define FLASHLIGHT_CHANNEL2_TORCH_DUTY       0
+#define FLASHLIGHT_TORCH_DUTY       10
 #define FLASHLIGHT_TORCH_TIMEOUT  0
 #define PRIZE_LEVEL_TORCH 3
 static int flashlight_state = 0;
@@ -1555,7 +1556,7 @@ unlock:
 static DEVICE_ATTR_RW(flashlight_sw_disable);
 /*zhengjiang.zhu@prize.Camera.Driver  2018/11/13  add for flashlight node:flashlight_torch*/
 /* torch sysfs */
-/*torch format: AB:  A: torch_flag, 1:on 0:off   B: torch_duty */
+/*torch format: torch_flag, 1:on 0:off */
 static ssize_t flashlight_torch_show(
 		struct device *dev, struct device_attribute *attr, char *buf)
 {
@@ -1569,19 +1570,10 @@ static ssize_t flashlight_torch_store(struct device *dev,
 	struct flashlight_dev_arg fl_dev_arg;
 	int type, ct, part,part_id;
 	int ret;
-	int len,torch_duty,torch_flag;
-	int j= 0;
-	int temp[8] = {0};
-	len = (size < (sizeof(size) - 1)) ? size : (sizeof(size) - 1);
-	flashlight_state = 0;
-	temp[len] = '\0';
-	for(; j< len-1;j++) {
-		temp[j] = *(buf +j) - '0';
-		printk("temp buff [%d]=%d \n",j,temp[j]);
-		flashlight_state = flashlight_state * 10 + temp[j];
-	}
-	torch_duty = temp[1];
-	torch_flag = temp[0];
+	int torch_duty,torch_flag;
+	flashlight_state = *buf - '0';
+	torch_flag = flashlight_state;
+	torch_duty = FLASHLIGHT_TORCH_DUTY;
 	pr_debug("flashlight_torch_store entry  flashlight_state=%d torch_duty=%d torch_flag=%d  decouple =%d\n",flashlight_state,torch_duty,torch_flag,decouple);
 
 	/* find flashlight device */
