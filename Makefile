@@ -655,7 +655,7 @@ endif
 
 ifdef CONFIG_LTO_GCC
 LTO_CFLAGS	:= -flto -flto=jobserver -fno-fat-lto-objects \
-		   -fuse-linker-plugin -fwhole-program
+		   -fuse-linker-plugin -fwhole-program -flto-compression-level=3
 KBUILD_CFLAGS	+= $(LTO_CFLAGS)
 LTO_LDFLAGS	:= $(LTO_CFLAGS) -Wno-lto-type-mismatch -Wno-psabi \
 		   -Wno-stringop-overflow -Wno-stringop-overread -flinker-output=nolto-rel \
