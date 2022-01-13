@@ -1009,6 +1009,9 @@ LCM_DRIVER *lcm_driver_list[] = {
 #if defined(HX8394F_DSI_VDO_T20_ATA)
 	&hx8394f_dsi_vdo_t20_ata_lcm_drv,
 #endif
+#if defined(HX8394F31_HDP_DSI_VDO)
+	&hx8394f31_hdp_dsi_vdo_lcm_drv,
+#endif
 #if defined(IT6151_LP079QX1_EDP_DSI_VIDEO_8163EVB)
 	&it6151_lp079qx1_edp_dsi_video_8163evb_lcm_drv,
 #endif

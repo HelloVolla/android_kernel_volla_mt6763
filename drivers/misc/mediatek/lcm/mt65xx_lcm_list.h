@@ -341,6 +341,7 @@ extern LCM_DRIVER ft8006p_hdp_dsi_vdo_boe_drip_incell_lcm_drv;
 /* prize added by tangcong, add lcm, 20191009-start */
 extern LCM_DRIVER ili9881p_hd_dsi_vdo_cmi_ata_lcm_drv;
 /* prize added by tangcong, add lcm, 20191009-end */
+extern LCM_DRIVER hx8394f31_hdp_dsi_vdo_lcm_drv;
 #ifdef BUILD_LK
 extern void mdelay(unsigned long msec);
 #endif
