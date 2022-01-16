@@ -220,4 +220,11 @@ int fts_proximity_resume(void);
 int fts_proximity_recovery(struct i2c_client *client);
 #endif
 
+#if	COMPARE_FW_VIA_VENDOR_ID
+#else
+extern unsigned short g_sensor_id;
+#define FTS_VENDOR_ID0                          0x5422
+#define FTS_VENDOR_ID1                     		0x5456
+#endif
+
 #endif /* __LINUX_FOCALTECH_CORE_H__ */

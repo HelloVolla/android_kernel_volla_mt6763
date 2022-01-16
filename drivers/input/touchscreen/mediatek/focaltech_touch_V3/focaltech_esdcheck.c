@@ -38,6 +38,9 @@
 * Included header files
 *****************************************************************************/
 #include "focaltech_core.h"
+//prize-chenhongjin-20190325 Power charging interference touch screen start
+//#include "../../../../power/supply/mediatek/charger/tp_charger_checkout_status.h"
+//prize-chenhongjin-20190325 Power charging interference touch screen end
 /*prize-chj-20181227 for tp esd Residual point problem start*/
 #include "lcm_drv.h"
 /*prize-chj-20181227 for tp esd Residual point problem end*/
@@ -311,6 +314,15 @@ static void esdcheck_func(struct work_struct *work)
                                   struct fts_ts_data, esdcheck_work.work);
 
     FTS_FUNC_ENTER();
+    //prize-chenhongjin-20190325 Power charging interference touch screen start
+	/*
+    if (tp_charger_checkout_status == 1){
+    fts_i2c_write_reg(ts_data->client, 0x8d,0x01);
+    }
+    else{
+        fts_i2c_write_reg(ts_data->client, 0x8d,0x00);
+    }*/
+    //prize-chenhongjin-20190325 Power charging interference touch screen end
     if (ENABLE == fts_esdcheck_data.mode) {
         if (ts_data->ic_info.is_incell) {
             fts_i2c_read_reg(ts_data->client, FTS_REG_ESDCHECK_DISABLE, &val);
@@ -324,9 +336,9 @@ static void esdcheck_func(struct work_struct *work)
             fts_i2c_read_reg(ts_data->client, 0xc8, &val_1);
             if(0x01 == val_1)
             {
-                display_bias_vpos_enable(0);
+                display_bias_disable();
                 msleep(16);
-                display_bias_vpos_enable(1);
+                display_bias_enable();
               fts_i2c_write_reg(ts_data->client, 0xc9, 0x01);
             }
 		/*prize-chj-20181227 for tp esd Residual point problem end*/

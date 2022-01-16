@@ -65,6 +65,83 @@ int fts_enter_charger_mode(struct i2c_client *client, int mode );
 *******************************************************************************/
 
 #if FTS_GLOVE_EN
+/*prize-for creat common node  /sys/prize/smartcover/state -yaozhipeng-20190718-start*/
+#if defined(CONFIG_PRIZE_SMART_COVER_COMMON_NODE)
+static ssize_t fts_touch_glove_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    int count;
+    u8 val;
+    struct input_dev *input_dev = fts_data->input_dev;
+    struct i2c_client *client =  fts_data->client;
+
+    mutex_lock(&input_dev->mutex);
+    fts_i2c_read_reg(client, FTS_REG_GLOVE_MODE_EN, &val);
+    count = sprintf(buf, "Glove Mode: %s\n", g_fts_mode_flag.fts_glove_mode_flag ? "On" : "Off");
+    count += sprintf(buf + count, "Glove Reg(0xC0) = %d\n", val);
+    mutex_unlock(&input_dev->mutex);
+
+    return count;
+}
+
+static ssize_t fts_touch_glove_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
+{
+    int ret;
+    struct fts_ts_data *ts_data = fts_data;
+    struct i2c_client *client;
+	int s = (buf[0] - '0');
+
+    client = ts_data->client;
+    if (s){
+        if (!g_fts_mode_flag.fts_glove_mode_flag) {
+            printk("[Mode]enter glove mode");
+            ret = fts_enter_glove_mode(client, true);
+            if (ret >= 0) {
+                g_fts_mode_flag.fts_glove_mode_flag = true;
+            }
+        }
+	}else{
+			if (g_fts_mode_flag.fts_glove_mode_flag) {
+				printk("[Mode]exit glove mode");
+				ret = fts_enter_glove_mode(client, false);
+				if (ret >= 0) {
+					g_fts_mode_flag.fts_glove_mode_flag = false;
+            }
+        }
+    }
+    printk("[Mode]glove mode status:  %d", g_fts_mode_flag.fts_glove_mode_flag);
+    return count;
+}
+
+/************************************************************************
+* Name: fts_enter_glove_mode
+* Brief:  change glove mode
+* Input:  glove mode
+* Output: no
+* Return: success >=0, otherwise failed
+***********************************************************************/
+int fts_enter_glove_mode( struct i2c_client *client, int mode)
+{
+    int ret = 0;
+    static u8 buf_addr[2] = { 0 };
+    static u8 buf_value[2] = { 0 };
+    buf_addr[0] = FTS_REG_GLOVE_MODE_EN; //glove control
+
+    if (mode)
+        buf_value[0] = 0x01;
+    else
+        buf_value[0] = 0x00;
+
+    ret = fts_i2c_write_reg( client, buf_addr[0], buf_value[0]);
+    if (ret < 0) {
+        FTS_ERROR("[Mode]fts_enter_glove_mode write value fail");
+    }
+
+    return ret ;
+
+}
+static DEVICE_ATTR(state,0664, fts_touch_glove_show, fts_touch_glove_store);
+#else
+/*prize-for creat common node  /sys/prize/smartcover/state -yaozhipeng-20190718-end*/
 static ssize_t fts_touch_glove_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
     int count;
@@ -144,7 +221,7 @@ int fts_enter_glove_mode( struct i2c_client *client, int mode)
 *
 */
 static DEVICE_ATTR (fts_glove_mode,  S_IRUGO | S_IWUSR, fts_touch_glove_show, fts_touch_glove_store);
-
+#endif
 #endif
 
 #if FTS_COVER_EN
@@ -314,7 +391,9 @@ static DEVICE_ATTR (fts_charger_mode,  S_IRUGO | S_IWUSR, fts_touch_charger_show
 
 static struct attribute *fts_touch_mode_attrs[] = {
 #if FTS_GLOVE_EN
+#if !defined(CONFIG_PRIZE_SMART_COVER_COMMON_NODE)
     &dev_attr_fts_glove_mode.attr,
+#endif
 #endif
 
 #if FTS_COVER_EN
@@ -334,6 +413,36 @@ static struct attribute_group fts_touch_mode_group = {
 
 int fts_ex_mode_init(struct i2c_client *client)
 {
+/*prize-for creat common node  /sys/prize/smartcover/state -yaozhipeng-20190718-start*/
+	#if defined(CONFIG_PRIZE_SMART_COVER_COMMON_NODE)  
+		static struct kobject *sysfs_rootdir = NULL; 
+		struct kobject *prize_glove = NULL;
+		int err = 0;
+		
+		g_fts_mode_flag.fts_glove_mode_flag = false;
+		g_fts_mode_flag.fts_cover_mode_flag = false;
+		g_fts_mode_flag.fts_charger_mode_flag = false;
+		
+
+		if (!sysfs_rootdir) {
+			// this kobject is shared between modules, do not free it when error occur
+			sysfs_rootdir = kobject_create_and_add("prize", kernel_kobj);
+		}
+
+		if (!prize_glove){
+			prize_glove = kobject_create_and_add("smartcover", sysfs_rootdir);
+		}
+		err = sysfs_create_link(prize_glove,&client->dev.kobj,"common_node");
+		if (err){
+			printk("prize fts sysfs_create_link fail\n");
+		}
+		if(sysfs_create_file(&client->dev.kobj, &dev_attr_state.attr))
+		{
+			return -1;
+		}
+			return 0;
+	#else
+/*prize-for creat common node  /sys/prize/smartcover/state -yaozhipeng-20190718-end*/
     int err = 0;
 
     g_fts_mode_flag.fts_glove_mode_flag = false;
@@ -350,7 +459,7 @@ int fts_ex_mode_init(struct i2c_client *client)
     }
 
     return err;
-
+	#endif
 }
 
 int fts_ex_mode_exit(struct i2c_client *client)

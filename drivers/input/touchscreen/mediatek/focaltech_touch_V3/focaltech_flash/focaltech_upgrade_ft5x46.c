@@ -34,6 +34,7 @@
 #include "../focaltech_core.h"
 #include "../focaltech_flash.h"
 
+#define FW_VER_ADDR		276
 /*****************************************************************************
 * Static function prototypes
 *****************************************************************************/
@@ -50,8 +51,14 @@ static int fts_ft5x46_init(void)
         FTS_ERROR("fw length fail");
         return -EINVAL;
     }
-
-    upgrade_func_ft5x46.fwveroff = upg->fw_length - 2;
+	
+	if((upg->fw_length > FW_VER_ADDR) && (g_sensor_id == FTS_VENDOR_ID1)){
+		upgrade_func_ft5x46.fwveroff = FW_VER_ADDR;
+		pr_err("gezi----fwveroff = %d,g_sensor_id = %x\n",upgrade_func_ft5x46.fwveroff,g_sensor_id);
+	}
+	else{
+		upgrade_func_ft5x46.fwveroff = upg->fw_length - 2;//276
+	}
     return 0;
 }
 
@@ -69,6 +76,7 @@ static int fts_ft5x46_upgrade(struct i2c_client *client, u8 *buf, u32 len)
     u8 cmd[4] = { 0 };
     int ecc_in_host = 0;
     int ecc_in_tp = 0;
+	u8 chip_id[3] = {0};
 
     if (NULL == buf) {
         FTS_ERROR("fw buf is null");
@@ -127,11 +135,20 @@ static int fts_ft5x46_upgrade(struct i2c_client *client, u8 *buf, u32 len)
     }
 
     FTS_INFO("ecc in tp:%x, host:%x", ecc_in_tp, ecc_in_host);
-    if (ecc_in_tp != ecc_in_host) {
-        FTS_ERROR("ecc check fail");
-        goto fw_reset;
-    }
-
+	
+	ret = fts_i2c_read_reg(client, FTS_REG_CHIP_ID, &chip_id[0]);
+	ret = fts_i2c_read_reg(client, FTS_REG_CHIP_ID2, &chip_id[1]);
+	ret = fts_i2c_read_reg(client, FTS_REG_VENDOR_ID, &chip_id[2]);
+	//if ((0x54 == chip_id[0]) || (0x56 == chip_id[1])) {
+	if(1){
+        FTS_ERROR("[FTS] current ic is new tp,not need ecc check.0x%x 0x%x 0x%x\n",chip_id[0],chip_id[1],chip_id[2]);
+	}else{
+		FTS_ERROR("[FTS] current ic is old tp,need ecc check...0x%x 0x%x 0x%x\n",chip_id[0],chip_id[1],chip_id[2]);
+		 if (ecc_in_tp != ecc_in_host) {
+			FTS_ERROR("ecc check fail");
+			goto fw_reset;
+		}
+	}
     FTS_INFO("upgrade success, reset to normal boot");
     ret = fts_fwupg_reset_in_boot(client);
     if (ret < 0) {

@@ -48,6 +48,11 @@
 
 extern struct hardware_info current_tp_info;
 #endif
+
+#if	COMPARE_FW_VIA_VENDOR_ID
+#else
+	unsigned short g_sensor_id = 0;
+#endif
 /*****************************************************************************
 * Private constant and macro definitions using #define
 *****************************************************************************/
@@ -58,7 +63,7 @@ extern struct hardware_info current_tp_info;
 
 static DECLARE_WAIT_QUEUE_HEAD(waiter);
 static int tpd_flag;
-//unsigned int tpd_rst_gpio_number = 0;
+unsigned int tpd_rst_gpio_number = 0;
 static unsigned int tpd_int_gpio_number = 1;
 
 #if (defined(CONFIG_TPD_HAVE_CALIBRATION) && !defined(CONFIG_TPD_CUSTOM_CALIBRATION))
@@ -245,6 +250,10 @@ static int fts_get_ic_information(struct fts_ts_data *ts_data)
 
     FTS_INFO("get ic information, chip id = 0x%02x%02x",
              ts_data->ic_info.ids.chip_idh, ts_data->ic_info.ids.chip_idl);
+			 
+	g_sensor_id = (ts_data->ic_info.ids.chip_idh << 8) + ts_data->ic_info.ids.chip_idl;
+	
+	FTS_INFO("get ic information, g_sensor_id = 0x%02x\n",g_sensor_id);
 
     return 0;
 }
@@ -351,7 +360,11 @@ int fts_power_init(void)
 {
     int ret;
     /*set TP volt*/
-    tpd->reg = regulator_get(tpd->tpd_dev, "vtouch");
+    tpd->reg = regulator_get(tpd->tpd_dev, "vldo28");
+	    if (tpd->reg == NULL) {
+        FTS_ERROR("[POWER]Failed to get vtouch fail ,tpd->reg NULL");
+        return -1;
+    }
     ret = regulator_set_voltage(tpd->reg, 2800000, 2800000);
     if (ret != 0) {
         FTS_ERROR("[POWER]Failed to set voltage of regulator,ret=%d!", ret);
@@ -365,7 +378,7 @@ int fts_power_init(void)
         FTS_ERROR("[POWER]Fail to enable regulator when init,ret=%d!", ret);
         return ret;
     }
-
+	
     return 0;
 }
 
@@ -893,9 +906,7 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
     int ret = 0;
 	u8 chipID;
-#if (FTS_AUTO_UPGRADE_EN == 0)
 	u8 ctp_fw_version;
-#endif
     struct fts_ts_data *ts_data;
 
     FTS_FUNC_ENTER();
@@ -1016,13 +1027,11 @@ static int tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
 #endif
     fts_i2c_read_reg(client, FTS_REG_CHIP_ID, &chipID);
 #if defined(CONFIG_PRIZE_HARDWARE_INFO)
-#if ( FTS_AUTO_UPGRADE_EN == 0 )
 	fts_i2c_read_reg(client, 0xA6, &ctp_fw_version);
-	sprintf(current_tp_info.chip,"FT8006P,Focaltech_FW:0x%02x", ctp_fw_version);
-#endif
+	sprintf(current_tp_info.chip,"Focaltech_FW:0x%02x", ctp_fw_version);
     sprintf(current_tp_info.id,"0x%04x",chipID);
     strcpy(current_tp_info.vendor,"Focaltech");
-    sprintf(current_tp_info.more,"%d*%d",1440,720);
+    sprintf(current_tp_info.more,"%d*%d",1600,720);
 #endif
     tpd_load_status = 1;
     FTS_DEBUG("TPD_RES_Y:%d", (int)TPD_RES_Y);
@@ -1145,7 +1154,9 @@ static int tpd_local_init(void)
     memcpy(tpd_def_calmat, tpd_def_calmat_local_normal, 8 * 4);
 #endif
 
+#ifdef TPD_DEBUG_CODE
     tpd_type_cap = 1;
+#endif
 
     FTS_FUNC_EXIT();
     return 0;
@@ -1211,14 +1222,26 @@ static void tpd_suspend(struct device *h)
     }
 
 #if FTS_POWER_SOURCE_CUST_EN
+//prize-add-pengzhipeng-20200324-start
     fts_power_suspend();
+//prize-add-pengzhipeng-20200324-end
 #endif
-
     ts_data->suspended = true;
     FTS_FUNC_EXIT();
 }
-
-
+//prize-add-pengzhipeng-20191129-start
+void fts_enter_low_power(void)
+{
+	int ret = 0;
+    struct fts_ts_data *ts_data = fts_data;
+	ret = fts_i2c_write_reg(ts_data->client, FTS_REG_POWER_MODE, FTS_REG_POWER_MODE_SLEEP_VALUE);
+    if (ret < 0) {
+        printk("Set TP to sleep mode fail, ret=%d!", ret);
+    }  
+	
+	printk("fts_enter_low_power sleep mode\n");
+}
+//prize-add-pengzhipeng-20191129-end
 /*****************************************************************************
 *  Name: tpd_resume
 *  Brief: When suspend, will call this function
@@ -1258,11 +1281,9 @@ static void tpd_resume(struct device *h)
 #if FTS_POWER_SOURCE_CUST_EN
     fts_power_resume();
 #endif
-
-    if (!ts_data->ic_info.is_incell) {
-        fts_reset_proc(10);
-    }
-
+//prize-add-pengzhipeng-20191129-start
+    fts_reset_proc(10);
+//prize-add-pengzhipeng-20191129-end
     /* Before read/write TP register, need wait TP to valid */
     fts_tp_state_recovery(ts_data->client);
 

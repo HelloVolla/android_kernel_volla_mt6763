@@ -66,9 +66,9 @@ struct upgrade_fw fw_list[] = {
 };
 
 struct upgrade_func *upgrade_func_list[] = {
+    &upgrade_func_ft5x46,
 /*
     &upgrade_func_ft5822,
-    &upgrade_func_ft5x46,
     &upgrade_func_ft6336gu,
     &upgrade_func_ft8006,
     &upgrade_func_ft8606,
@@ -80,8 +80,9 @@ struct upgrade_func *upgrade_func_list[] = {
     &upgrade_func_ft8719,
     &upgrade_func_ft8739,
     &upgrade_func_ft5452,
-*/
+
     &upgrade_func_ft8006p,
+	*/
 };
 struct fts_upgrade *fwupgrade;
 
@@ -1337,7 +1338,6 @@ static bool fts_lic_need_upgrade(struct i2c_client *client)
 
     FTS_DEBUG("lcd initial code version in tp:%x, host:%x",
               initcode_ver_in_tp, initcode_ver_in_host);
-			  
     if (0xA5 == initcode_ver_in_tp) {
         FTS_INFO("lcd init code ver is 0xA5, don't upgade init code");
         return false;
@@ -1736,15 +1736,14 @@ int fts_fwupg_upgrade(struct i2c_client *client, struct fts_upgrade *upg)
 void fts_fwupg_auto_upgrade(struct fts_ts_data *ts_data)
 {
     int ret = 0;
+#if defined(CONFIG_PRIZE_HARDWARE_INFO)
+    u8 ctp_fw_version = 0;
+#endif
 
     struct i2c_client *client = ts_data->client;
     struct fts_upgrade *upg = fwupgrade;
-#if defined(CONFIG_PRIZE_HARDWARE_INFO)	
-	u8 ctp_fw_version = 0;
-	u8 lcd_ver = 0;
-	u8 chipID = 0; 
-#endif  
-	FTS_INFO("********************FTS enter upgrade********************");
+
+    FTS_INFO("********************FTS enter upgrade********************");
 
     ret = fts_fwupg_upgrade(client, upg);
     if (ret < 0)
@@ -1759,18 +1758,12 @@ void fts_fwupg_auto_upgrade(struct fts_ts_data *ts_data)
     else
         FTS_INFO("**********lcd init code no upgrade/upgrade success**********");
 #endif
-
 #if defined(CONFIG_PRIZE_HARDWARE_INFO)
-	fts_i2c_read_reg(client, 0xA6, &ctp_fw_version);
-	fts_i2c_read_reg(client, FTS_REG_CHIP_ID, &chipID);
-	fts_i2c_read_reg(client, FTS_REG_LIC_VER, &lcd_ver);
-	sprintf(current_tp_info.id,"0x%04x,lcd_version:0x%02x",chipID,lcd_ver);
-	sprintf(current_tp_info.chip,"Focaltech_FW:0x%02x", ctp_fw_version);
-#endif
 
-
+    fts_i2c_read_reg(client, 0xA6, &ctp_fw_version);
+    sprintf(current_tp_info.chip,"Focaltech_FW:0x%02x", ctp_fw_version);
     FTS_INFO("********************FTS exit upgrade********************");
-
+#endif
 }
 
 /*
@@ -1841,6 +1834,7 @@ static int fts_fwupg_get_fw_file(struct fts_ts_data *ts_data)
 
 #if (FTS_GET_VENDOR_ID_NUM > 1)
     int ret = 0;
+#if	COMPARE_FW_VIA_VENDOR_ID
     int i = 0;
     u16 vendor_id = 0;
 
@@ -1862,6 +1856,29 @@ static int fts_fwupg_get_fw_file(struct fts_ts_data *ts_data)
         FTS_ERROR("no vendor id match, don't get file");
         return -ENODATA;
     }
+#else
+	//u8 chip_id[2] = {0};
+	//struct i2c_client *client = ts_data->client;
+	//ret = fts_i2c_read_reg(client, FTS_REG_CHIP_ID, &chip_id[0]);
+	//ret = fts_i2c_read_reg(client, FTS_REG_CHIP_ID2, &chip_id[1]);
+	//   if (ret < 0) {
+    //    FTS_ERROR("get chip id failed");
+    //    return ret;
+    //}
+	// FTS_INFO("success to read chip id:0x%x%x", chip_id[0],chip_id[1]);
+	ret = 0;
+	
+	if(g_sensor_id == FTS_VENDOR_ID0){
+		fw = &fw_list[0];
+		FTS_ERROR("chip id compare success,use fw_list 0\n");
+	}else if(g_sensor_id == FTS_VENDOR_ID1){
+		fw = &fw_list[1];
+		FTS_ERROR("chip id compare success,use fw_list 1\n");
+	}else{
+		FTS_ERROR("chip id compare failed,use fw1\n");
+		fw = &fw_list[1];
+	}
+#endif	
 #endif
 
     if (upg) {

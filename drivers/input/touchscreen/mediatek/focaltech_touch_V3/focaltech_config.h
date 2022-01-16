@@ -116,7 +116,7 @@
 /*
  * choose your ic chip type of focaltech
  */
-#define FTS_CHIP_TYPE   _FT8006P
+#define FTS_CHIP_TYPE   _FT5436
 
 /******************* Enables *********************/
 /*********** 1 to enable, 0 to disable ***********/
@@ -125,7 +125,7 @@
  * show debug log info
  * enable it for debug, disable it for release
  */
-#define FTS_DEBUG_EN                            1
+#define FTS_DEBUG_EN                        0
 
 /*
  * Linux MultiTouch Protocol
@@ -189,7 +189,7 @@
  * enable it when customer need control TP power
  * default: disable
  */
-#define FTS_POWER_SOURCE_CUST_EN                0
+#define FTS_POWER_SOURCE_CUST_EN                1
 
 /****************************************************/
 
@@ -197,7 +197,7 @@
 /*
  * auto upgrade, please keep enable
  */
-#define FTS_AUTO_UPGRADE_EN                     0//1
+#define FTS_AUTO_UPGRADE_EN                     1//1
 
 /*
  * auto upgrade for lcd cfg
@@ -209,8 +209,8 @@
  * 0:No check vendor_id (default)
  * 1/2/3: Check vendor_id for vendor compatibility
  */
-#define FTS_GET_VENDOR_ID_NUM                   0
-
+#define FTS_GET_VENDOR_ID_NUM                   2
+#define	COMPARE_FW_VIA_VENDOR_ID				0
 /*
  * vendor_id(s) for vendor(s) to be compatible with.
  * a confirmation of vendor_id(s) is recommended.
@@ -221,7 +221,7 @@
  * FTS_GET_VENDOR_ID_NUM >= 3, compatible with FTS_VENDOR_ID3
  */
 #define FTS_VENDOR_ID                          0x0000
-#define FTS_VENDOR_ID2                         0x0000
+#define FTS_VENDOR_ID2                         0x0082
 #define FTS_VENDOR_ID3                         0x0000
 
 /*
@@ -229,13 +229,13 @@
  * define your own fw_file, the sample one to be replaced is invalid
  * NOTE: if FTS_GET_VENDOR_ID_NUM > 1, it's the fw corresponding with FTS_VENDOR_ID
  */
-#define FTS_UPGRADE_FW_FILE                      "include/firmware/fw_sample.i"
+#define FTS_UPGRADE_FW_FILE                      "include/firmware/FT5446_HLT_K605_Ver0x25_20190716_app.i"
 
 /*
  * if FTS_GET_VENDOR_ID_NUM >= 2, fw corrsponding with FTS_VENDOR_ID2
  * define your own fw_file, the sample one is invalid
  */
-#define FTS_UPGRADE_FW2_FILE                     "include/firmware/fw_sample.i"
+#define FTS_UPGRADE_FW2_FILE                     "include/firmware/5446U_HLT_KB_K605_CCF12598_V06_20210621_app.i"
 
 /*
  * if FTS_GET_VENDOR_ID_NUM >= 3, fw corrsponding with FTS_VENDOR_ID3
