@@ -4104,28 +4104,6 @@ int DSI_esd_check_num(LCM_DSI_PARAMS *dsi_params)
 	return cnt;
 }
 
-
-void hx8394f_cmdq(void *cmdq_trigger_handle, int dsi_i)
-{
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[0],0x002D2902);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[1],0x181919D5);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[2],0x1A1B1B18);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[3],0x0201001A);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[4],0x06050403);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[5],0x18212007);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[6],0x18181818);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[7],0x18181818);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[8],0x24181818);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[9],0x18181825);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[10],0x18181818);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[11],0x18181818);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_CMDQ_REG[dsi_i]->data[12],0x00000018);
-	    DSI_OUTREG32(cmdq_trigger_handle, &DSI_REG[dsi_i]->DSI_CMDQ_SIZE,13);
-		
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_REG[dsi_i]->DSI_START,0);
-		DSI_OUTREG32(cmdq_trigger_handle, &DSI_REG[dsi_i]->DSI_START,1);
-		DSI_POLLREG32(cmdq_trigger_handle, &DSI_REG[dsi_i]->DSI_INTSTA,0X80000000,0);
-}
 int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, enum CMDQ_STATE state)
 {
 	int ret = 0;
@@ -4197,7 +4175,6 @@ int ddp_dsi_build_cmdq(enum DISP_MODULE_ENUM module, void *cmdq_trigger_handle, 
 		DSI_OUTREGBIT(cmdq_trigger_handle, struct DSI_INT_ENABLE_REG,
 			      DSI_REG[dsi_i]->DSI_INTEN, CMD_DONE, 1);
 
-		hx8394f_cmdq(cmdq_trigger_handle,dsi_i);
 		for (i = 0; i < 4; i++) {
 			if (dsi_params->lcm_esd_check_table[i].cmd == 0)
 				break;
