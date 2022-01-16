@@ -123,6 +123,18 @@
 		is_batch_supported = <0>;
 	};
 
+	icm426xx_gsensor_mtk:icm426xx_gsensor@70 {
+		compatible = "mediatek,icm426xx_gsensor";
+		reg = <0x70>;
+		status = "okay";
+	};
+
+	icm426xx_gyro_mtk:icm426xx_gyro@71 {
+		compatible = "mediatek,icm426xx_gyro";
+		reg = <0x71>;
+		status = "okay";
+	};
+
 	/*alsps@51 {
 		pinctrl-names = "pin_default", "pin_cfg";
 		pinctrl-0 = <&alsps_intpin_default>;
