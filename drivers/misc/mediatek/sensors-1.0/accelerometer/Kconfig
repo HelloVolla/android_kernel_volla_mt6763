@@ -30,3 +30,4 @@ source "drivers/misc/mediatek/sensors-1.0/accelerometer/bma4xy/Kconfig"
 source "drivers/misc/mediatek/sensors-1.0/accelerometer/mxc400x_prize/Kconfig"
 source "drivers/misc/mediatek/sensors-1.0/accelerometer/da226/Kconfig"
 #prize added by huarui, sensor driver, 20190111-end
+source "drivers/misc/mediatek/sensors-1.0/accelerometer/icm426xx_a/Kconfig"

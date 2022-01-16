@@ -16,3 +16,4 @@ source "drivers/misc/mediatek/sensors-1.0/step_counter/stepsignhub/Kconfig"
 #prize added by huarui, sensor driver, 20190111-start
 source "drivers/misc/mediatek/sensors-1.0/step_counter/bmi160-stc/Kconfig"
 #prize added by huarui, sensor driver, 20190111-end
+source "drivers/misc/mediatek/sensors-1.0/step_counter/icm426xx_sc/Kconfig"

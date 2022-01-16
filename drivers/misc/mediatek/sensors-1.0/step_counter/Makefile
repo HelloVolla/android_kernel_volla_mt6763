@@ -25,3 +25,4 @@ endif
 #prize added by huarui, sensor driver, 20190111-start
 obj-$(CONFIG_MTK_BMI160_STC)   +=  bmi160-stc/
 #prize added by huarui, sensor driver, 20190111-end
+obj-$(CONFIG_MTK_ICM426XX_SC)   +=  icm426xx_sc/

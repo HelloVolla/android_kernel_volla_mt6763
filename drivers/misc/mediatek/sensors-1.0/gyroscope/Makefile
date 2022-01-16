@@ -9,3 +9,4 @@ obj-$(CONFIG_MTK_LSM6DS3HGY)   +=  lsm6ds3hgy/
 obj-$(CONFIG_MTK_BMI160GY_I2C) +=  bmi160gy-i2c/
 obj-$(CONFIG_MTK_ITG1010)   +=  ITG1010/
 obj-$(CONFIG_MTK_MPU6050GY)   +=  mpu6050gy/
+obj-$(CONFIG_MTK_ICM426XX_G)   +=  icm426xx_g/

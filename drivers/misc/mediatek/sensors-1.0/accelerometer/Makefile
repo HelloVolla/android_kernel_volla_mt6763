@@ -19,3 +19,4 @@ obj-$(CONFIG_MTK_BMA4XY)   +=  bma4xy/
 obj-$(CONFIG_MTK_MXC400X_PRIZE)   +=  mxc400x_prize/
 obj-$(CONFIG_MTK_DA226)   +=  da226/
 #prize added by huarui, sensor driver, 20190111-end
+obj-$(CONFIG_MTK_ICM426XX_A)   +=  icm426xx_a/
