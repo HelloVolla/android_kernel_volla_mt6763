@@ -20,8 +20,6 @@
 
 #define BMI160_ACCESS_BY_GSE_I2C
 
-#define BMIGYRO_TAG                  "[bmi160_gyro] "
-#define BMIGYRO_ERR(fmt, args...)    pr_info(BMIGYRO_TAG"%s %d : "fmt, __func__, __LINE__, ##args)
 /* apply low pass filter on output */
 /* #define CONFIG_BMG_LOWPASS */
 
@@ -165,5 +163,6 @@ extern s8 bmi_i2c_read_wrapper(u8 dev_addr, u8 reg_addr, u8 *data, u8 len);
 extern s8 bmi_i2c_write_wrapper(u8 dev_addr, u8 reg_addr, u8 *data, u8 len);
 #endif
 int bmg_get_powermode(struct i2c_client *client, unsigned char *mode);
-int bmg_get_drop_cmd_err(struct i2c_client *client, unsigned char *drop_cmd_err);
+int bmg_get_drop_cmd_err(struct i2c_client *client,
+	unsigned char *drop_cmd_err);
 #endif/* BMI160_GYRO_H */

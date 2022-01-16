@@ -90,12 +90,12 @@ static int stc_i2c_read_block(struct i2c_client *client, u8 addr,
 	if (!client)
 		return -EINVAL;
 	else if (len > C_I2C_FIFO_SIZE) {
-		STEP_C_PR_ERR(" length %d exceeds %d\n", len, C_I2C_FIFO_SIZE);
+		pr_err(" length %d exceeds %d\n", len, C_I2C_FIFO_SIZE);
 		return -EINVAL;
 	}
 	err = i2c_transfer(client->adapter, msgs, sizeof(msgs)/sizeof(msgs[0]));
 	if (err != 2) {
-		STEP_C_PR_ERR("i2c_transfer error: (%d %p %d) %d\n",
+		pr_err("i2c_transfer error: (%d %p %d) %d\n",
 			addr, data, len, err);
 		err = -EIO;
 	} else {
@@ -113,7 +113,7 @@ static int stc_i2c_write_block(struct i2c_client *client, u8 addr,
 	if (!client)
 		return -EINVAL;
 	else if (len >= C_I2C_FIFO_SIZE) {
-		STEP_C_PR_ERR("length %d exceeds %d\n", len, C_I2C_FIFO_SIZE);
+		pr_err("length %d exceeds %d\n", len, C_I2C_FIFO_SIZE);
 		return -EINVAL;
 	}
 
@@ -122,7 +122,7 @@ static int stc_i2c_write_block(struct i2c_client *client, u8 addr,
 		buf[num++] = data[idx];
 	err = i2c_master_send(client, buf, num);
 	if (err < 0) {
-		STEP_C_PR_ERR("send command error!!\n");
+		pr_err("send command error!!\n");
 		return -EFAULT;
 	} else {
 		err = 0;
@@ -873,7 +873,7 @@ static int step_c_get_chip_type(struct i2c_client *client)
 	err = stc_i2c_read_block(client, BMI160_USER_CHIP_ID__REG, &chip_id, 1);
 	bmi160_stc_delay(20);
 	if (err < 0) {
-		STEP_C_PR_ERR("read chip id failed.\n");
+		pr_err("read chip id failed.\n");
 		return err;
 	}
 	switch (chip_id) {
@@ -889,10 +889,10 @@ static int step_c_get_chip_type(struct i2c_client *client)
 		break;
 	}
 	if (obj->sensor_type == INVALID_TYPE) {
-		STEP_C_PR_ERR("unknown sensor.\n");
+		pr_err("unknown sensor.\n");
 		return ERROR;
 	}
-	STEP_C_LOG("read sensor chip id = %x ok.\n", (int)chip_id);
+	pr_debug("read sensor chip id = %x ok.\n", (int)chip_id);
 	return SUCCESS;
 }
 
@@ -913,13 +913,13 @@ static int step_c_set_powermode(enum STC_POWERMODE_ENUM power_mode)
 		BMI160_CMD_COMMANDS__REG, &actual_power_mode, 1);
 	bmi160_stc_delay(10);
 	if (err < 0) {
-		STEP_C_PR_ERR("set power mode failed.\n");
+		pr_err("set power mode failed.\n");
 		mutex_unlock(&obj->lock);
 		return err;
 	}
 	obj->power_mode = power_mode;
 	mutex_unlock(&obj->lock);
-	STEP_C_LOG("set power mode = %d ok.\n", (int)actual_power_mode);
+	pr_debug("set power mode = %d ok.\n", (int)actual_power_mode);
 	return err;
 }
 
@@ -946,7 +946,7 @@ static int step_c_open(struct inode *inode, struct file *file)
 {
 	file->private_data = obj_i2c_data;
 	if (file->private_data == NULL) {
-		STEP_C_PR_ERR("file->private_data == NULL.\n");
+		pr_err("file->private_data == NULL.\n");
 		return -EINVAL;
 	}
 	return nonseekable_open(inode, file);
@@ -984,17 +984,17 @@ static int bmi160_step_c_open_report_data(int open)
 static int bmi160_step_c_enable_nodata(int en)
 {
 	int err = 0;
-	STEP_C_FUN("bmi160_step_c_enable_nodata\n");
+	pr_debug("bmi160_step_c_enable_nodata\n");
 
 	if (bmi160_set_step_counter_enable(en) < 0) {
-		STEP_C_PR_ERR("set bmi160_STEP_COUNTER error");
+		pr_err("set bmi160_STEP_COUNTER error");
 		return -EINVAL;
 	}
 	bmi160_stc_delay(BMI160_GEN_READ_WRITE_DELAY);
 	if (en == 1)
 		err = step_c_set_powermode(STC_NORMAL_MODE);
 	if (err)
-		STEP_C_PR_ERR("set acc_op_mode failed");
+		pr_err("set acc_op_mode failed");
 	obj_i2c_data->stepcounter_enable = en;
 	return err;
 }
@@ -1005,7 +1005,7 @@ static int bmi160_step_c_set_delay(u64 ns)
 	int sample_delay = 0;
 	int value = (int)ns / 1000 / 1000;
 
-	STEP_C_FUN("bmi160_step_c_set_delay\n");
+	pr_debug("bmi160_step_c_set_delay\n");
 	if (value <= 5)
 		sample_delay = BMI160_ACCEL_ODR_200HZ;
 	else if (value <= 10)
@@ -1016,11 +1016,11 @@ static int bmi160_step_c_set_delay(u64 ns)
 		sample_delay = BMI160_ACCEL_ODR_25HZ;
 	else
 		sample_delay = BMI160_ACCEL_ODR_100HZ;
-	STEP_C_LOG("sensor delay value = %d, sample delay = %d\n",
+	pr_debug("sensor delay value = %d, sample delay = %d\n",
 			value, sample_delay);
 	err = step_c_set_datarate(sample_delay);
 	if (err < 0)
-		STEP_C_PR_ERR("set data rate error.\n");
+		pr_err("set data rate error.\n");
 	return err;
 }
 
@@ -1028,9 +1028,9 @@ static int bmi160_step_c_enable_significant(int en)
 {
 	int err = 0;
 
-	STEP_C_LOG("bmi160_step_c_enable_significant, en = %d\n", en);
+	pr_debug("bmi160_step_c_enable_significant, en = %d\n", en);
 	if (bmi160_set_intr_significant_motion_select(en) < 0) {
-		STEP_C_PR_ERR("set bmi160_significant error");
+		pr_err("set bmi160_significant error");
 		return -EINVAL;
 	}
 	if (en == 1) {
@@ -1058,7 +1058,7 @@ static int bmi160_step_c_enable_significant(int en)
 		bmi160_stc_delay(BMI160_GEN_READ_WRITE_DELAY);
 	}
 	if (err)
-		STEP_C_PR_ERR("set acc_config failed");
+		pr_err("set acc_config failed");
 	obj_i2c_data->sigmotion_enable = en;
 	return err;
 }
@@ -1067,22 +1067,22 @@ static int bmi160_step_c_enable_step_detect(int en)
 {
 	int err = 0;
 
-	STEP_C_LOG("bmi160_step_c_enable_step_detect, en = %d\n", en);
+	pr_debug("bmi160_step_c_enable_step_detect, en = %d\n", en);
 	if (bmi160_set_step_detector_enable(en) < 0) {
-		STEP_C_PR_ERR("set bmi160_STEP_COUNTER error");
+		pr_err("set bmi160_STEP_COUNTER error");
 		return -EINVAL;
 	}
 	bmi160_stc_delay(BMI160_GEN_READ_WRITE_DELAY);
 	#ifdef BMI160_ENABLE_INT1
 	if (bmi160_set_intr_low_g(BMI160_MAP_INTR1, en) < 0) {
-		STEP_C_PR_ERR("set bmi160_STEP_COUNTER_lowg error");
+		pr_err("set bmi160_STEP_COUNTER_lowg error");
 		return -EINVAL;
 	}
 	#endif
 	bmi160_stc_delay(BMI160_GEN_READ_WRITE_DELAY);
 	#ifdef BMI160_ENABLE_INT2
 	if (bmi160_set_intr_low_g(BMI160_MAP_INTR2, en) < 0) {
-		STEP_C_PR_ERR("set bmi160_STEP_COUNTER_lowg error");
+		pr_err("set bmi160_STEP_COUNTER_lowg error");
 		return -EINVAL;
 	}
 	#endif
@@ -1091,7 +1091,7 @@ static int bmi160_step_c_enable_step_detect(int en)
 		err = step_c_set_powermode(STC_NORMAL_MODE);
 	bmi160_stc_delay(BMI160_GEN_READ_WRITE_DELAY);
 	if (err)
-		STEP_C_PR_ERR("set acc_op_mode failed");
+		pr_err("set acc_op_mode failed");
 	obj_i2c_data->stepdet_enable = en;
 	return err;
 }
@@ -1131,18 +1131,18 @@ static int bmi160_step_c_get_data(uint32_t *value, int *status)
 	if (0 == data) {
 		err = bmi160_stc_get_mode(obj->client, &acc_mode);
 		if (err < 0)
-			STEP_C_PR_ERR("bmi160_acc_get_mode failed.\n");
-		STEP_C_LOG("step_c_get_data acc mode = %d.\n", acc_mode);
+			pr_err("bmi160_acc_get_mode failed.\n");
+		pr_debug("step_c_get_data acc mode = %d.\n", acc_mode);
 		err = get_step_counter_enable(obj->client, &stc_enable);
 		if (err < 0)
-			STEP_C_PR_ERR("get_step_counter_enable failed.\n");
-		STEP_C_LOG("step_c_get_data stc enable = %d.\n", stc_enable);
+			pr_err("get_step_counter_enable failed.\n");
+		pr_debug("step_c_get_data stc enable = %d.\n", stc_enable);
 		if (acc_mode != 0 && stc_enable == 1)
 			data = last_stc_value;
 	}
 	bmi160_stc_delay(30);
 	if (err < 0) {
-		STEP_C_PR_ERR("read step count fail.\n");
+		pr_err("read step count fail.\n");
 		return err;
 	}
 
@@ -1156,21 +1156,21 @@ static int bmi160_step_c_get_data(uint32_t *value, int *status)
 	}
 	*value = (int)obj->pedo_data.last_step_counter_value;
 	*status = 1;
-	STEP_C_LOG("step_c_get_data = %d.\n", (int)(*value));
+	pr_debug("step_c_get_data = %d.\n", (int)(*value));
 	return err;
 
 }
 
 static int bmi160_stc_get_data_significant(uint32_t *value, int *status)
 {
-	STEP_C_FUN("bmi160_stc_get_data_significant\n");
+	pr_debug("bmi160_stc_get_data_significant\n");
 
 	return 0;
 }
 
 static int bmi160_stc_get_data_step_d(uint32_t *value, int *status)
 {
-	STEP_C_FUN("bmi160_stc_get_data_step_d\n");
+	pr_debug("bmi160_stc_get_data_step_d\n");
 
 	return 0;
 }
@@ -1178,7 +1178,7 @@ static int bmi160_stc_get_data_step_d(uint32_t *value, int *status)
 static int bmi160_map_interrupt(void)
 {
 	int err = 0;
-	STEP_C_FUN("bmi160_map_interrupt\n");
+	pr_debug("bmi160_map_interrupt\n");
 #ifdef BMI160_ENABLE_INT1
 	/*Set interrupt trige level way */
 	err = bmi160_set_intr_edge_ctrl_stc(BMI160_MAP_INTR1, BMI_INT_LEVEL);
@@ -1253,7 +1253,7 @@ static int step_c_i2c_probe(void)
 	struct step_c_data_path data = {0};
 	int err = 0;
 
-	STEP_C_LOG("step_c_i2c_probe\n");
+	pr_debug("step_c_i2c_probe\n");
 	obj = kzalloc(sizeof(*obj), GFP_KERNEL);
 	if (!obj) {
 		err = -ENOMEM;
@@ -1261,7 +1261,7 @@ static int step_c_i2c_probe(void)
 	}
 	obj_i2c_data = obj;
 	if (NULL == bmi160_acc_i2c_client){
-		STEP_C_PR_ERR("acc i2c client null\n");
+		pr_err("acc i2c client null\n");
 		err = -EINVAL;
 		goto exit;
 	}
@@ -1276,7 +1276,7 @@ static int step_c_i2c_probe(void)
 		goto exit_init_client_failed;
 	err = misc_register(&step_c_device);
 	if (err) {
-		STEP_C_PR_ERR("misc device register failed, err = %d\n", err);
+		pr_err("misc device register failed, err = %d\n", err);
 		goto exit_misc_device_register_failed;
 	}
 	ctl.open_report_data = bmi160_step_c_open_report_data;
@@ -1294,7 +1294,7 @@ static int step_c_i2c_probe(void)
 
 	err = step_c_register_control_path(&ctl);
 	if (err) {
-		STEP_C_PR_ERR("register step_counter control path err.\n");
+		pr_err("register step_counter control path err.\n");
 		goto exit_create_attr_failed;
 	}
 	data.get_data = bmi160_step_c_get_data;
@@ -1303,14 +1303,14 @@ static int step_c_i2c_probe(void)
 	data.get_data_step_d = bmi160_stc_get_data_step_d;
 	err = step_c_register_data_path(&data);
 	if (err) {
-		STEP_C_PR_ERR("step_c_register_data_path fail = %d\n", err);
+		pr_err("step_c_register_data_path fail = %d\n", err);
 		goto exit_create_attr_failed;
 	}
 	err = bmi160_map_interrupt();
 	if (err)
-		STEP_C_PR_ERR("bmi160_map_interrupt fail = %d\n", err);
+		pr_err("bmi160_map_interrupt fail = %d\n", err);
 	step_c_init_flag = 0;
-	STEP_C_LOG("%s: is ok.\n", __func__);
+	pr_debug("%s: is ok.\n", __func__);
 	return 0;
 
 exit_create_attr_failed:
@@ -1320,7 +1320,7 @@ exit_init_client_failed:
 	kfree(obj);
 exit:
 	step_c_init_flag = -1;
-	STEP_C_PR_ERR("err = %d\n", err);
+	pr_err("err = %d\n", err);
 	return err;
 }
 
@@ -1331,9 +1331,9 @@ static int bmi160_stc_remove(void)
 
 static int bmi160_stc_local_init(void)
 {
-	STEP_C_FUN("bmi160_stc_local_init.\n");
+	pr_debug("bmi160_stc_local_init.\n");
 	if (step_c_i2c_probe()) {
-		STEP_C_PR_ERR("failed to register bmi160 step_c driver\n");
+		pr_err("failed to register bmi160 step_c driver\n");
 		return -ENODEV;
 	}
 	return 0;
@@ -1347,14 +1347,14 @@ static struct step_c_init_info bmi160_stc_init_info = {
 
 static int __init stc_init(void)
 {
-	STEP_C_FUN("stc_init\n");
+	pr_debug("stc_init\n");
 	step_c_driver_add(&bmi160_stc_init_info);
 	return 0;
 }
 
 static void __exit stc_exit(void)
 {
-	STEP_C_FUN();
+	pr_debug();
 }
 
 module_init(stc_init);
