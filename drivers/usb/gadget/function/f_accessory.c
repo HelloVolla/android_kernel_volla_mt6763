@@ -80,13 +80,13 @@ struct acc_dev {
 	/* online indicates state of function_set_alt & function_unbind
 	 * set to 1 when we connect
 	 */
-	int online:1;
+	int online;
 
 	/* disconnected indicates state of open & release
 	 * Set to 1 when we disconnect.
 	 * Not cleared until our file is closed.
 	 */
-	int disconnected:1;
+	int disconnected;
 
 	/* strings sent by the host */
 	char manufacturer[ACC_STRING_SIZE];
@@ -199,7 +199,6 @@ static struct usb_gadget_strings *acc_strings[] = {
 	NULL,
 };
 
-/* temporary variable used between acc_open() and acc_gadget_bind() */
 static struct acc_dev *_acc_dev;
 
 struct acc_instance {
@@ -1265,7 +1264,6 @@ static int acc_setup(void)
 	INIT_DELAYED_WORK(&dev->start_work, acc_start_work);
 	INIT_WORK(&dev->hid_work, acc_hid_work);
 
-	/* _acc_dev must be set before calling usb_gadget_register_driver */
 	_acc_dev = dev;
 
 	ret = misc_register(&acc_device);
@@ -1351,7 +1349,6 @@ static void acc_free_inst(struct usb_function_instance *fi)
 static struct usb_function_instance *acc_alloc_inst(void)
 {
 	struct acc_instance *fi_acc;
-	struct acc_dev *dev;
 	int err;
 
 	fi_acc = kzalloc(sizeof(*fi_acc), GFP_KERNEL);
@@ -1369,7 +1366,6 @@ static struct usb_function_instance *acc_alloc_inst(void)
 
 	config_group_init_type_name(&fi_acc->func_inst.group,
 					"", &acc_func_type);
-	dev = _acc_dev;
 	return  &fi_acc->func_inst;
 }
 
