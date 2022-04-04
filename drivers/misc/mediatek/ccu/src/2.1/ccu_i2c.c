@@ -64,7 +64,7 @@ static int ccu_i2c_remove(struct i2c_client *client);
 
 /*ccu i2c operation*/
 static struct i2c_client *get_ccu_i2c_client(uint32_t i2c_id);
-static void ccu_i2c_dump_info(struct mt_i2c *i2c);
+//static void ccu_i2c_dump_info(struct mt_i2c *i2c);
 static int ccu_i2c_controller_en(uint32_t i2c_id, int enable);
 static int i2c_query_dma_buffer_addr(struct ccu_device_s
 				     *g_ccu_device, uint32_t sensor_idx,
@@ -341,7 +341,7 @@ void ccu_i2c_dump_errr(void)
 		pClient = get_ccu_i2c_client(i);
 		if (pClient != NULL) {
 			i2c = i2c_get_adapdata(pClient->adapter);
-			ccu_i2c_dump_info(i2c);
+			//ccu_i2c_dump_info(i2c);
 		} else {
 			LOG_INF_MUST("I2C controller[%d] CCU client is null\n", i);
 		}
@@ -489,11 +489,11 @@ static inline void i2c_writew(u16 value, struct mt_i2c *i2c,
 {
 	writew(value, i2c->base + offset);
 }
-
+/*
 static void ccu_i2c_dump_info(struct mt_i2c *i2c)
 {
-	/* I2CFUC(); */
-	/* int val=0; */
+	// I2CFUC();
+	// int val=0;
 
 	pr_debug("i2c_dump_info ++++++++++++++++++++++++++++++++++++++++++\n");
 	pr_debug("I2C structure:\n"
@@ -548,4 +548,4 @@ static void ccu_i2c_dump_info(struct mt_i2c *i2c)
 		(i2c_readl_dma(i2c, OFFSET_TX_MEM_ADDR2)),
 		(i2c_readl_dma(i2c, OFFSET_RX_MEM_ADDR2)));
 	pr_debug("i2c_dump_info ------------------------------------------\n");
-}
+}*/

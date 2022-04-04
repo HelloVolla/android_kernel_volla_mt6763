@@ -58,7 +58,7 @@ static inline u32 i2c_readl_dma(struct mt_i2c *i2c, u16 offset);
 static inline void i2c_writel_dma(u32 value, struct mt_i2c *i2c, u16 offset);
 static inline u16 i2c_readw(struct mt_i2c *i2c, u16 offset);
 static inline void i2c_writew(u16 value, struct mt_i2c *i2c, u16 offset);
-static void ccu_i2c_dump_info(struct mt_i2c *i2c);
+//static void ccu_i2c_dump_info(struct mt_i2c *i2c);
 static int ccu_reset_i2c_apdma(struct mt_i2c *i2c);
 
 
@@ -434,13 +434,13 @@ void ccu_i2c_dump_errr(void)
 
 	pClient = getCcuI2cClient();
 	i2c = i2c_get_adapdata(pClient->adapter);
-	ccu_i2c_dump_info(i2c);
+	//ccu_i2c_dump_info(i2c);
 }
-
+/*
 static void ccu_i2c_dump_info(struct mt_i2c *i2c)
 {
-	/* I2CFUC(); */
-	/* int val=0; */
+	// I2CFUC();
+	// int val=0;
 	pr_debug("i2c_dump_info ++++++++++++++++++++++++++++++++++++++++++\n");
 	pr_debug("base address 0x%p\n", i2c->base);
 	pr_debug("I2C register:\n"
@@ -490,7 +490,7 @@ static void ccu_i2c_dump_info(struct mt_i2c *i2c)
 	       (i2c_readl_dma(i2c, 0x80 + OFFSET_RX_MEM_ADDR2)));
 	pr_debug("i2c_dump_info ------------------------------------------\n");
 
-}
+}*/
 
 /*do i2c apdma warm reset & re-write dma buf addr, txlen*/
 static int ccu_reset_i2c_apdma(struct mt_i2c *i2c)
